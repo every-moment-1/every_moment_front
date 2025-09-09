@@ -3,15 +3,20 @@
   --card: #ffffff;
   --text: #111;
   --muted: #666;
-  --primary: #111;    /* 버튼 배경 (검정) */
-  --primary-fg: #fff; /* 버튼 텍스트 */
+  --primary: #111;       /* 버튼 배경 (검정) */
+  --primary-fg: #fff;    /* 버튼 텍스트 */
   --border: #e5e7eb;
   --error: #e11d48;
 }
 
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; }
-body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: var(--bg); }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
 
 .auth-wrap {
   min-height: 100%;
@@ -37,37 +42,133 @@ body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-
 .auth-form { display: grid; gap: 14px; }
 .field { display: grid; gap: 6px; }
 .field-label { font-size: 13px; color: #333; font-weight: 600; }
-input {
-  width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px;
-  font-size: 14px; outline: none; background: #fff;
-}
-input:focus { border-color: #111; box-shadow: 0 0 0 3px rgba(0,0,0,.06); }
 
+/* 🛠️ 텍스트 계열 input만 100% 폭 지정 (라디오/체크 제외) */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+input[type="number"],
+input[type="date"],
+input[type="time"] {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  background: #fff;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="search"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+input[type="time"]:focus {
+  border-color: #111;
+  box-shadow: 0 0 0 3px rgba(0,0,0,.06);
+}
+
+/* 비밀번호 보기 토글 */
 .pw-field { position: relative; }
 .pw-field input { padding-right: 64px; }
 .pw-toggle {
-  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
-  border: 1px solid var(--border); background: #f7f7f7; padding: 6px 10px; border-radius: 8px;
-  font-size: 12px; cursor: pointer;
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 1px solid var(--border);
+  background: #f7f7f7;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
 }
 .pw-toggle:hover { background: #efefef; }
 
+/* Buttons */
 .primary {
   margin-top: 8px;
-  width: 100%; padding: 12px 14px; border: none; border-radius: 10px;
-  background: var(--primary); color: var(--primary-fg); font-weight: 700; font-size: 15px;
+  width: 100%;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary);
+  color: var(--primary-fg);
+  font-weight: 700;
+  font-size: 15px;
   cursor: pointer;
 }
 .primary:disabled { opacity: .6; cursor: not-allowed; }
 
 .linklike {
-  display: inline-block; text-align: center; margin-top: 8px;
-  padding: 10px 12px; width: 100%;
-  border: 1px solid var(--border); border-radius: 10px; color: #111; text-decoration: none;
+  display: inline-block;
+  text-align: center;
+  margin-top: 8px;
+  padding: 10px 12px;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: #111;
+  text-decoration: none;
 }
 .linklike:hover { background: #f8f8f8; }
 
+/* Alerts / hints */
 .error {
-  background: #fff1f2; color: var(--error);
-  border: 1px solid #fecdd3; padding: 10px 12px; border-radius: 10px; font-size: 13px;
+  background: #fff1f2;
+  color: var(--error);
+  border: 1px solid #fecdd3;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
 }
+.success {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+.hint { font-size: 12px; margin-top: 4px; }
+.error-text { color: var(--error); }
+
+
+.fieldset {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px 10px;
+}
+
+/* 라디오 버튼 기본 크기/리셋 */
+input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+/* 2열 라디오 그리드 (성별/흡연 여부) */
+.radio-grid.two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 18px;
+  align-items: center;
+}
+
+/* 라디오 항목 한 줄 */
+.radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+/* (호환용) 가로 나열이 필요할 때 */
+.radio-row { display: flex; gap: 12px; flex-wrap: wrap; }

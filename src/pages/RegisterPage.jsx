@@ -1,3 +1,4 @@
+// src/pages/RegisterPage.jsx (전체 교체해도 됨)
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axiosInstance';
@@ -9,8 +10,8 @@ export default function RegisterPage() {
     email: '',
     password: '',
     confirmPassword: '',
-    gender: '',
-    smoking: 'NO',
+    gender: '',       // 'MALE' | 'FEMALE'
+    smoking: 'NO',    // 'YES' | 'NO'
   });
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState('');
@@ -37,11 +38,11 @@ export default function RegisterPage() {
       await api.post('/auth/register', {
         email: form.email,
         password: form.password,
-        gender: form.gender,
-        smoking: form.smoking === 'YES',
+        gender: form.gender,                 // 'MALE' | 'FEMALE'
+        smoking: form.smoking === 'YES',     // boolean으로 전송
       });
 
-      // ✅ 선택 1) 자동 로그인
+      // 자동 로그인 후 홈으로
       const loginRes = await api.post('/auth/login', {
         email: form.email,
         password: form.password,
@@ -70,10 +71,45 @@ export default function RegisterPage() {
 
         <form onSubmit={handleSubmit} className="auth-form">
           <label className="field">
-            <span className="field-label">이메일</span>
+            <span className="field-label">이름</span>
             <input
-              name="email" type="email" placeholder="example@domain.com"
-              value={form.email} onChange={(e)=>setForm(f=>({...f, email:e.target.value}))}
+              name="name" type="name" placeholder="이름을 입력해주세요."
+              value={form.name}
+              onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
+              autoComplete="name" required
+            />
+          </label>
+
+          <fieldset className="field fieldset">
+            <legend className="field-label">성별</legend>
+            <div className="radio-grid two">
+              <label className="radio">
+                <input
+                  type="radio" name="gender" value="MALE"
+                  checked={form.gender === 'MALE'}
+                  onChange={(e) => setForm(f => ({ ...f, gender: e.target.value }))}
+                  required
+                />
+                <span>남성</span>
+              </label>
+              <label className="radio">
+                <input
+                  type="radio" name="gender" value="FEMALE"
+                  checked={form.gender === 'FEMALE'}
+                  onChange={(e) => setForm(f => ({ ...f, gender: e.target.value }))}
+                  required
+                />
+                <span>여성</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <label className="field">
+            <span className="field-label">아이디</span>
+            <input
+              name="email" type="email" placeholder="이메일을 입력해주세요"
+              value={form.email}
+              onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))}
               autoComplete="email" required
             />
           </label>
@@ -81,8 +117,9 @@ export default function RegisterPage() {
           <label className="field">
             <span className="field-label">비밀번호</span>
             <input
-              name="password" type="password" placeholder="8자 이상"
-              value={form.password} onChange={(e)=>setForm(f=>({...f, password:e.target.value}))}
+              name="password" type="password" placeholder="비밀번호 입력(8자 이상)"
+              value={form.password}
+              onChange={(e) => setForm(f => ({ ...f, password: e.target.value }))}
               autoComplete="new-password" required
             />
           </label>
@@ -90,37 +127,35 @@ export default function RegisterPage() {
           <label className="field">
             <span className="field-label">비밀번호 확인</span>
             <input
-              name="confirmPassword" type="password" placeholder="비밀번호 확인"
-              value={form.confirmPassword} onChange={(e)=>setForm(f=>({...f, confirmPassword:e.target.value}))}
+              name="confirmPassword" type="password" placeholder="비밀번호 재입력"
+              value={form.confirmPassword}
+              onChange={(e) => setForm(f => ({ ...f, confirmPassword: e.target.value }))}
               autoComplete="new-password" required
             />
           </label>
 
-          <fieldset className="field">
-            <legend className="field-label">성별</legend>
-            <div className="radio-row">
-              {['MALE','FEMALE','OTHER'].map(g=>(
-                <label key={g} className="radio">
-                  <input type="radio" name="gender" value={g}
-                    checked={form.gender===g}
-                    onChange={(e)=>setForm(f=>({...f, gender:e.target.value}))}/>
-                  <span>{g==='MALE'?'남성':g==='FEMALE'?'여성':'기타'}</span>
-                </label>
-              ))}
-            </div>
-          </fieldset>
-
-          <fieldset className="field">
+          {/* 흡연 여부: 2열 그리드 */}
+          <fieldset className="field fieldset">
             <legend className="field-label">흡연 여부</legend>
-            <div className="radio-row">
-              {['YES','NO'].map(s=>(
-                <label key={s} className="radio">
-                  <input type="radio" name="smoking" value={s}
-                    checked={form.smoking===s}
-                    onChange={(e)=>setForm(f=>({...f, smoking:e.target.value}))}/>
-                  <span>{s==='YES'?'흡연':'비흡연'}</span>
-                </label>
-              ))}
+            <div className="radio-grid two">
+              <label className="radio">
+                <input
+                  type="radio" name="smoking" value="YES"
+                  checked={form.smoking === 'YES'}
+                  onChange={(e) => setForm(f => ({ ...f, smoking: e.target.value }))}
+                  required
+                />
+                <span>흡연</span>
+              </label>
+              <label className="radio">
+                <input
+                  type="radio" name="smoking" value="NO"
+                  checked={form.smoking === 'NO'}
+                  onChange={(e) => setForm(f => ({ ...f, smoking: e.target.value }))}
+                  required
+                />
+                <span>비흡연</span>
+              </label>
             </div>
           </fieldset>
 
@@ -130,7 +165,6 @@ export default function RegisterPage() {
           <button type="submit" className="primary" disabled={loading}>
             {loading ? '처리 중…' : '회원가입'}
           </button>
-
           <Link to="/" className="secondary linklike">로그인으로 돌아가기</Link>
         </form>
       </div>
