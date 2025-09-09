@@ -1,55 +1,64 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import api from '../api/axiosInstance';
+import { authStore } from '../store/auth';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectTo = location.state?.from?.pathname || '/home';
+
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState('');
+  const [fieldErr, setFieldErr] = useState({ email: '', password: '' });
+
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const onChange = (e) => {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
-  };
-
-  const validateEmail = (email) => {
-    // 간단 이메일 형식 검증 (username@domain)
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
+    // 인라인 유효성
+    if (name === 'email') {
+      setFieldErr((fe) => ({ ...fe, email: validateEmail(value) ? '' : '올바른 이메일 주소를 입력하세요.' }));
+    }
+    if (name === 'password') {
+      setFieldErr((fe) => ({ ...fe, password: value ? '' : '비밀번호를 입력하세요.' }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErr('');
 
-    if (!form.email || !form.password) {
-      setErr('이메일과 비밀번호를 입력해주세요.');
-      return;
-    }
-    if (!validateEmail(form.email)) {
-      setErr('올바른 이메일 형식을 입력해주세요.');
-      return;
-    }
+    const emailOk = validateEmail(form.email);
+    const pwOk = !!form.password;
+    setFieldErr({
+      email: emailOk ? '' : '올바른 이메일 주소를 입력하세요.',
+      password: pwOk ? '' : '비밀번호를 입력하세요.',
+    });
+    if (!emailOk || !pwOk) return;
 
     try {
       setLoading(true);
-      // 👉 실제 API 엔드포인트로 교체
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-        credentials: 'include',
+      const res = await api.post('/auth/login', {
+        email: form.email,
+        password: form.password,
       });
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || '로그인에 실패했습니다.');
-      }
+      // JSON 모드 가정: { accessToken, refreshToken, user }
+      const { accessToken, refreshToken, user, message } = res.data || {};
+      if (accessToken) authStore.setTokens({ accessToken, refreshToken });
+      if (user) authStore.setUser(user);
 
-      navigate('/home');
+      navigate(redirectTo, { replace: true });
     } catch (e) {
-      setErr(e.message || '로그인 중 문제가 발생했습니다.');
+      const msg =
+        e?.response?.data?.message ||
+        e?.message ||
+        '로그인에 실패했습니다.';
+      setErr(msg);
     } finally {
       setLoading(false);
     }
@@ -63,7 +72,7 @@ export default function LoginPage() {
           <p className="subtitle">기숙사 매칭 시스템</p>
         </header>
 
-        <form onSubmit={handleSubmit} className="auth-form">
+        <form onSubmit={handleSubmit} className="auth-form" noValidate>
           <label className="field">
             <span className="field-label">이메일</span>
             <input
@@ -74,7 +83,10 @@ export default function LoginPage() {
               onChange={onChange}
               autoComplete="email"
               required
+              aria-invalid={!!fieldErr.email}
+              aria-describedby="email-error"
             />
+            {fieldErr.email && <small id="email-error" className="hint error-text">{fieldErr.email}</small>}
           </label>
 
           <label className="field">
@@ -88,6 +100,8 @@ export default function LoginPage() {
                 onChange={onChange}
                 autoComplete="current-password"
                 required
+                aria-invalid={!!fieldErr.password}
+                aria-describedby="pw-error"
               />
               <button
                 type="button"
@@ -98,6 +112,7 @@ export default function LoginPage() {
                 {showPw ? '숨김' : '보기'}
               </button>
             </div>
+            {fieldErr.password && <small id="pw-error" className="hint error-text">{fieldErr.password}</small>}
           </label>
 
           {err && <div className="error" role="alert">{err}</div>}

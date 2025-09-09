@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import api from '../api/axiosInstance';
+import { authStore } from '../store/auth';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -8,62 +10,51 @@ export default function RegisterPage() {
     password: '',
     confirmPassword: '',
     gender: '',
-    smoking: 'NO', // 'YES' | 'NO'
+    smoking: 'NO',
   });
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState('');
   const [ok, setOk] = useState('');
 
-  const onChange = (e) => {
-    const { name, value } = e.target;
-    setForm((f) => ({ ...f, [name]: value }));
-  };
-
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
   const validate = () => {
     if (!validateEmail(form.email)) return '올바른 이메일 형식을 입력하세요.';
     if (form.password.length < 8) return '비밀번호는 8자 이상이어야 합니다.';
     if (form.password !== form.confirmPassword) return '비밀번호가 일치하지 않습니다.';
     if (!form.gender) return '성별을 선택하세요.';
-    if (!['YES','NO'].includes(form.smoking)) return '흡연 여부를 선택하세요.';
+    if (!['YES', 'NO'].includes(form.smoking)) return '흡연 여부를 선택하세요.';
     return '';
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErr('');
-    setOk('');
-
+    setErr(''); setOk('');
     const v = validate();
-    if (v) {
-      setErr(v);
-      return;
-    }
+    if (v) { setErr(v); return; }
 
     try {
       setLoading(true);
-      // 👉 실제 백엔드 엔드포인트로 교체하세요.
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: form.email,
-          password: form.password,
-          gender: form.gender,         // 'MALE' | 'FEMALE' | 'OTHER' 등 백엔드 스키마에 맞추세요
-          smoking: form.smoking === 'YES', // boolean으로 받는 경우 예시
-        }),
+      await api.post('/auth/register', {
+        email: form.email,
+        password: form.password,
+        gender: form.gender,
+        smoking: form.smoking === 'YES',
       });
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || '회원가입에 실패했습니다.');
-      }
+      // ✅ 선택 1) 자동 로그인
+      const loginRes = await api.post('/auth/login', {
+        email: form.email,
+        password: form.password,
+      });
+      const { accessToken, refreshToken, user } = loginRes.data || {};
+      if (accessToken) authStore.setTokens({ accessToken, refreshToken });
+      if (user) authStore.setUser(user);
 
-      setOk('회원가입이 완료되었습니다. 로그인 화면으로 이동합니다.');
-      setTimeout(() => navigate('/'), 900);
+      setOk('회원가입이 완료되었습니다.');
+      navigate('/home', { replace: true });
     } catch (e) {
-      setErr(e.message || '문제가 발생했습니다.');
+      const msg = e?.response?.data?.message || e?.message || '회원가입에 실패했습니다.';
+      setErr(msg);
     } finally {
       setLoading(false);
     }
@@ -81,101 +72,55 @@ export default function RegisterPage() {
           <label className="field">
             <span className="field-label">이메일</span>
             <input
-              name="email"
-              type="email"
-              placeholder="example@domain.com"
-              value={form.email}
-              onChange={onChange}
-              autoComplete="email"
-              required
+              name="email" type="email" placeholder="example@domain.com"
+              value={form.email} onChange={(e)=>setForm(f=>({...f, email:e.target.value}))}
+              autoComplete="email" required
             />
           </label>
 
           <label className="field">
             <span className="field-label">비밀번호</span>
             <input
-              name="password"
-              type="password"
-              placeholder="8자 이상"
-              value={form.password}
-              onChange={onChange}
-              autoComplete="new-password"
-              required
+              name="password" type="password" placeholder="8자 이상"
+              value={form.password} onChange={(e)=>setForm(f=>({...f, password:e.target.value}))}
+              autoComplete="new-password" required
             />
           </label>
 
           <label className="field">
             <span className="field-label">비밀번호 확인</span>
             <input
-              name="confirmPassword"
-              type="password"
-              placeholder="비밀번호 확인"
-              value={form.confirmPassword}
-              onChange={onChange}
-              autoComplete="new-password"
-              required
+              name="confirmPassword" type="password" placeholder="비밀번호 확인"
+              value={form.confirmPassword} onChange={(e)=>setForm(f=>({...f, confirmPassword:e.target.value}))}
+              autoComplete="new-password" required
             />
           </label>
 
           <fieldset className="field">
             <legend className="field-label">성별</legend>
             <div className="radio-row">
-              <label className="radio">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="MALE"
-                  checked={form.gender === 'MALE'}
-                  onChange={onChange}
-                />
-                <span>남성</span>
-              </label>
-              <label className="radio">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="FEMALE"
-                  checked={form.gender === 'FEMALE'}
-                  onChange={onChange}
-                />
-                <span>여성</span>
-              </label>
-              <label className="radio">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="OTHER"
-                  checked={form.gender === 'OTHER'}
-                  onChange={onChange}
-                />
-                <span>기타</span>
-              </label>
+              {['MALE','FEMALE','OTHER'].map(g=>(
+                <label key={g} className="radio">
+                  <input type="radio" name="gender" value={g}
+                    checked={form.gender===g}
+                    onChange={(e)=>setForm(f=>({...f, gender:e.target.value}))}/>
+                  <span>{g==='MALE'?'남성':g==='FEMALE'?'여성':'기타'}</span>
+                </label>
+              ))}
             </div>
           </fieldset>
 
           <fieldset className="field">
             <legend className="field-label">흡연 여부</legend>
             <div className="radio-row">
-              <label className="radio">
-                <input
-                  type="radio"
-                  name="smoking"
-                  value="YES"
-                  checked={form.smoking === 'YES'}
-                  onChange={onChange}
-                />
-                <span>흡연</span>
-              </label>
-              <label className="radio">
-                <input
-                  type="radio"
-                  name="smoking"
-                  value="NO"
-                  checked={form.smoking === 'NO'}
-                  onChange={onChange}
-                />
-                <span>비흡연</span>
-              </label>
+              {['YES','NO'].map(s=>(
+                <label key={s} className="radio">
+                  <input type="radio" name="smoking" value={s}
+                    checked={form.smoking===s}
+                    onChange={(e)=>setForm(f=>({...f, smoking:e.target.value}))}/>
+                  <span>{s==='YES'?'흡연':'비흡연'}</span>
+                </label>
+              ))}
             </div>
           </fieldset>
 
