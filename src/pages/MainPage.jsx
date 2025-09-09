@@ -47,7 +47,6 @@ export default function MainPage({
         </nav>
       </header>
 
-      {/* 히어로 + 현황 */}
       <section className="hero">
         <div className="hero-left">
           <h1 className="title">everymoment는</h1>
