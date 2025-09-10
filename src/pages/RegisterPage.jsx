@@ -1,9 +1,8 @@
-// src/pages/RegisterPage.jsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axiosInstance';
 import { authStore } from '../store/auth';
-import '../styles/global.css'; // auth 전용 스타일(.auth-scope) 로드
+import '../styles/global.css';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -28,7 +27,7 @@ export default function RegisterPage() {
     return '';
   };
 
-  // 백엔드 필드 매핑 도우미
+  // 백엔드 필드 매핑
   const toUsername = (email) => {
     let base = (email.split('@')[0] || 'user').replace(/[^a-zA-Z0-9_]/g, '_');
     if (base.length < 3) base = base.padEnd(3, '_');
@@ -48,48 +47,78 @@ export default function RegisterPage() {
     try {
       setLoading(true);
 
-      // 1) 회원가입
-      await api.post('/auth/register', {
-        username: toUsername(form.email),
-        gender: toGenderInt(form.gender),
-        email: form.email,
-        password: form.password,
-        smoking: toSmokingBool(form.smoking),
-      });
+      // 1) 회원가입 시도
+      let canProceedToLogin = true;
+      try {
+        await api.post('/auth/register', {
+          username: toUsername(form.email),
+          gender: toGenderInt(form.gender),
+          email: form.email,
+          password: form.password,
+          smoking: toSmokingBool(form.smoking),
+        });
+      } catch (regErr) {
+        // 백엔드에서 createdAt 직렬화 NPE로 500이 떠도 DB에는 저장된 상태일 수 있음
+        const status = regErr?.response?.status;
+        const rawMsg = regErr?.response?.data?.message || regErr?.message || '';
 
-      // 2) 자동 로그인
-      const loginRes = await api.post('/auth/login', {
-        email: form.email,
-        password: form.password,
-      });
-      const { accessToken, refreshToken, user } = loginRes.data?.data || loginRes.data || {};
-      if (accessToken) authStore.setTokens({ accessToken, refreshToken });
-      if (user) authStore.setUser(user);
+        const isAuditBug =
+          status >= 500 &&
+          (rawMsg.includes('LocalDateTime.toString') ||
+           rawMsg.includes('getCreatedAt') ||
+           rawMsg.includes('createdAt'));
 
-      setOk('회원가입이 완료되었습니다.');
-      navigate('/main', { replace: true });
-    } catch (e) {
-      const status = e?.response?.status;
-      const serverMsg = e?.response?.data?.message;
-      if (status === 409) {
-        setErr(serverMsg || '이미 가입된 이메일입니다. 다른 이메일을 사용해 주세요.');
-      } else {
-        setErr(serverMsg || e?.message || '회원가입에 실패했습니다.');
+        if (status === 409) {
+          // 중복 이메일은 진짜 실패로 처리
+          setErr('이미 사용 중인 이메일입니다.');
+          canProceedToLogin = false;
+        } else if (!isAuditBug) {
+          // 그 외 오류는 일반 실패 메시지
+          setErr('회원가입에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+          canProceedToLogin = false;
+        }
+        // isAuditBug === true면 로그인 시도로 넘어감
       }
+
+      if (!canProceedToLogin) return;
+
+      // 2) 자동 로그인 시도 (회원가입 200이든, 위 500-버그든 모두 여기서 확인)
+      try {
+        const loginRes = await api.post('/auth/login', {
+          email: form.email,
+          password: form.password,
+        });
+        const { accessToken, refreshToken, user } = loginRes.data?.data || loginRes.data || {};
+        if (!accessToken) {
+          setErr('로그인 토큰을 받지 못했습니다. 다시 시도해 주세요.');
+          return;
+        }
+        authStore.setTokens({ accessToken, refreshToken });
+        if (user) authStore.setUser(user);
+
+        // ✅ 화면에는 "회원가입 성공"만 보여주고 이동
+        setOk('회원가입이 완료되었습니다.');
+        navigate('/main', { replace: true });
+      } catch (loginErr) {
+        // 회원가입은 되었지만 로그인 실패한 경우
+        setErr('회원가입은 완료되었지만 자동 로그인에 실패했습니다. 로그인 화면에서 다시 시도해 주세요.');
+      }
+    } catch (e2) {
+      setErr('회원가입 처리 중 오류가 발생했습니다. 다시 시도해 주세요.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-scope">{/* ✅ global.css의 .auth-scope 범위 안에서만 스타일 적용 */}
+    <div className="auth-wrap">
       <div className="auth-card" role="main" aria-labelledby="register-title">
         <header className="auth-header">
           <h1 id="register-title" className="brand">every-moment</h1>
           <p className="subtitle">회원가입</p>
         </header>
 
-        <form onSubmit={handleSubmit} className="auth-form">
+        <form onSubmit={handleSubmit} className="auth-form" noValidate>
           {/* 성별 */}
           <fieldset className="field fieldset">
             <legend className="field-label">성별</legend>
@@ -119,13 +148,10 @@ export default function RegisterPage() {
           <label className="field">
             <span className="field-label">아이디</span>
             <input
-              name="email"
-              type="email"
-              placeholder="이메일을 입력해주세요"
+              name="email" type="email" placeholder="이메일을 입력해주세요"
               value={form.email}
               onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))}
-              required
-              autoComplete="email"
+              required autoComplete="email"
             />
           </label>
 
@@ -133,13 +159,10 @@ export default function RegisterPage() {
           <label className="field">
             <span className="field-label">비밀번호</span>
             <input
-              name="password"
-              type="password"
-              placeholder="8자 이상"
+              name="password" type="password" placeholder="8자 이상"
               value={form.password}
               onChange={(e) => setForm(f => ({ ...f, password: e.target.value }))}
-              required
-              autoComplete="new-password"
+              required autoComplete="new-password"
             />
           </label>
 
@@ -147,13 +170,10 @@ export default function RegisterPage() {
           <label className="field">
             <span className="field-label">비밀번호 확인</span>
             <input
-              name="confirmPassword"
-              type="password"
-              placeholder="다시 입력"
+              name="confirmPassword" type="password" placeholder="다시 입력"
               value={form.confirmPassword}
               onChange={(e) => setForm(f => ({ ...f, confirmPassword: e.target.value }))}
-              required
-              autoComplete="new-password"
+              required autoComplete="new-password"
             />
           </label>
 
@@ -182,14 +202,15 @@ export default function RegisterPage() {
             </div>
           </fieldset>
 
+          {/* 알림 */}
           {err && <div className="error" role="alert">{err}</div>}
           {ok && <div className="success" role="status">{ok}</div>}
 
+          {/* 버튼 */}
           <button type="submit" className="primary" disabled={loading}>
             {loading ? '처리 중…' : '회원가입'}
           </button>
-
-          <Link to="/" className="linklike">로그인으로 돌아가기</Link>
+          <Link to="/" className="secondary linklike">로그인으로 돌아가기</Link>
         </form>
       </div>
     </div>
