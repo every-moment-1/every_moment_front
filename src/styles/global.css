@@ -1,174 +1,166 @@
-:root {
+/* ===============================
+   Auth-only scoped styles
+   (.auth-scope 또는 .auth-wrap 내부에만 적용)
+================================ */
+.auth-scope, .auth-wrap {
   --bg: #0f0f10;
   --card: #ffffff;
   --text: #111;
   --muted: #666;
-  --primary: #111;       /* 버튼 배경 (검정) */
-  --primary-fg: #fff;    /* 버튼 텍스트 */
+  --primary: #111;
+  --primary-fg: #fff;
   --border: #e5e7eb;
   --error: #e11d48;
-}
 
-* { box-sizing: border-box; }
-html, body, #root { height: 100%; }
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px 16px;
   background: var(--bg);
   color: var(--text);
 }
 
-.auth-wrap {
-  min-height: 100%;
-  display: grid;
-  place-items: center;
-  padding: 40px 16px;
-}
+/* 모든 요소 박스계산 통일 */
+.auth-scope *, .auth-wrap * { box-sizing: border-box; }
 
-.auth-card {
-  width: 100%;
-  max-width: 420px;
+/* 카드 */
+.auth-scope .auth-card,
+.auth-wrap .auth-card {
+  width: min(520px, 100%);
   background: var(--card);
   color: var(--text);
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.15);
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.12);
   padding: 28px;
+  position: relative;
+  overflow: hidden;         /* ✅ 내부 요소가 삐져나오지 않도록 */
+  border: 1px solid rgba(17,17,17,0.06);
 }
 
-.auth-header { text-align: center; margin-bottom: 20px; }
-.brand { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: 0.2px; }
-.subtitle { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+/* 헤더 */
+.auth-scope .auth-header,
+.auth-wrap .auth-header { text-align: left; margin-bottom: 20px; }
+.auth-scope .brand, .auth-wrap .brand { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: .2px; }
+.auth-scope .subtitle, .auth-wrap .subtitle { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
 
-.auth-form { display: grid; gap: 14px; }
-.field { display: grid; gap: 6px; }
-.field-label { font-size: 13px; color: #333; font-weight: 600; }
+/* 폼 */
+.auth-scope .auth-form,
+.auth-wrap .auth-form { display: grid; gap: 16px; }
 
-/* 🛠️ 텍스트 계열 input만 100% 폭 지정 (라디오/체크 제외) */
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="search"],
-input[type="tel"],
-input[type="url"],
-input[type="number"],
-input[type="date"],
-input[type="time"] {
+/* 라벨/필드 공통 */
+.auth-scope .field,
+.auth-wrap .field { display: grid; gap: 8px; }
+.auth-scope .field-label,
+.auth-wrap .field-label { font-size: 13px; color: #2b2b2b; font-weight: 700; }
+
+/* 텍스트 계열 인풋 */
+.auth-scope input[type="text"],
+.auth-scope input[type="email"],
+.auth-scope input[type="password"],
+.auth-scope input[type="search"],
+.auth-scope input[type="tel"],
+.auth-scope input[type="url"],
+.auth-scope input[type="number"],
+.auth-scope input[type="date"],
+.auth-scope input[type="time"],
+.auth-wrap  input[type="text"],
+.auth-wrap  input[type="email"],
+.auth-wrap  input[type="password"],
+.auth-wrap  input[type="search"],
+.auth-wrap  input[type="tel"],
+.auth-wrap  input[type="url"],
+.auth-wrap  input[type="number"],
+.auth-wrap  input[type="date"],
+.auth-wrap  input[type="time"] {
   width: 100%;
+  max-width: 100%;           /* ✅ 부모 영역 넘지 않게 */
+  height: 48px;
   padding: 12px 14px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: 14px;
   outline: none;
   background: #fff;
+  transition: box-shadow .15s ease, border-color .15s ease;
+  appearance: none;
 }
-
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="password"]:focus,
-input[type="search"]:focus,
-input[type="tel"]:focus,
-input[type="url"]:focus,
-input[type="number"]:focus,
-input[type="date"]:focus,
-input[type="time"]:focus {
+.auth-scope input:focus, .auth-wrap input:focus {
   border-color: #111;
   box-shadow: 0 0 0 3px rgba(0,0,0,.06);
 }
 
-/* 비밀번호 보기 토글 */
-.pw-field { position: relative; }
-.pw-field input { padding-right: 64px; }
-.pw-toggle {
+/* 비밀번호 보기 토글이 있는 필드 */
+.auth-scope .pw-field, .auth-wrap .pw-field { position: relative; width: 100%; }
+.auth-scope .pw-field input,
+.auth-wrap .pw-field input {
+  padding-right: 56px;       /* ✅ 우측 토글 공간 확보 */
+}
+
+/* 토글 버튼을 입력창 "안쪽" 오른쪽에 붙이기 */
+.auth-scope .pw-toggle,
+.auth-wrap .pw-toggle {
   position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  border: 1px solid var(--border);
-  background: #f7f7f7;
-  padding: 6px 10px;
-  border-radius: 8px;
-  font-size: 12px;
+  top: 0; right: 0;
+  height: 100%;
+  padding: 0 12px;
+  border: 0;                 /* ✅ 테두리/배경 제거 → 카드 밖으로 튀어나와 보이지 않음 */
+  border-left: 1px solid var(--border);
+  background: transparent;
+  color: #555;
+  font-size: 13px;
+  border-radius: 0 12px 12px 0;
   cursor: pointer;
 }
-.pw-toggle:hover { background: #efefef; }
+.auth-scope .pw-toggle:hover,
+.auth-wrap .pw-toggle:hover { background: #f7f7f8; }
 
-/* Buttons */
-.primary {
-  margin-top: 8px;
-  width: 100%;
-  padding: 12px 14px;
-  border: none;
-  border-radius: 10px;
-  background: var(--primary);
-  color: var(--primary-fg);
-  font-weight: 700;
-  font-size: 15px;
-  cursor: pointer;
+/* 메시지/힌트 */
+.auth-scope .error, .auth-wrap .error {
+  background: #fff1f2; color: var(--error);
+  border: 1px solid #fecdd3; padding: 10px 12px; border-radius: 10px; font-size: 13px;
 }
-.primary:disabled { opacity: .6; cursor: not-allowed; }
+.auth-scope .success, .auth-wrap .success {
+  background: #ecfdf5; color: #059669;
+  border: 1px solid #a7f3d0; padding: 10px 12px; border-radius: 10px; font-size: 13px;
+}
+.auth-scope .hint, .auth-wrap .hint { font-size: 12px; margin-top: 4px; }
+.auth-scope .error-text, .auth-wrap .error-text { color: var(--error); }
 
-.linklike {
-  display: inline-block;
-  text-align: center;
-  margin-top: 8px;
-  padding: 10px 12px;
-  width: 100%;
+/* 버튼 */
+.auth-scope .primary, .auth-wrap .primary {
+  margin-top: 4px;
+  width: 100%; height: 48px;
+  padding: 12px 14px; border: none; border-radius: 12px;
+  background: var(--primary); color: var(--primary-fg);
+  font-weight: 800; font-size: 15px; cursor: pointer;
+}
+.auth-scope .primary:disabled, .auth-wrap .primary:disabled { opacity: .6; cursor: not-allowed; }
+
+.auth-scope .linklike, .auth-wrap .linklike {
+  display: inline-block; text-align: center; margin-top: 8px;
+  padding: 12px 14px; width: 100%;
+  border: 1px solid var(--border); border-radius: 12px; color: #111; text-decoration: none;
+}
+.auth-scope .linklike:hover, .auth-wrap .linklike:hover { background: #f8f8f8; }
+
+/* Fieldset & Radio */
+.auth-scope .fieldset, .auth-wrap .fieldset {
   border: 1px solid var(--border);
-  border-radius: 10px;
-  color: #111;
-  text-decoration: none;
-}
-.linklike:hover { background: #f8f8f8; }
-
-/* Alerts / hints */
-.error {
-  background: #fff1f2;
-  color: var(--error);
-  border: 1px solid #fecdd3;
-  padding: 10px 12px;
-  border-radius: 10px;
-  font-size: 13px;
-}
-.success {
-  background: #ecfdf5;
-  color: #059669;
-  border: 1px solid #a7f3d0;
-  padding: 10px 12px;
-  border-radius: 10px;
-  font-size: 13px;
-}
-.hint { font-size: 12px; margin-top: 4px; }
-.error-text { color: var(--error); }
-
-
-.fieldset {
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 12px 14px 10px;
 }
-
-/* 라디오 버튼 기본 크기/리셋 */
-input[type="radio"] {
-  width: 16px;
-  height: 16px;
-  margin: 0;
+.auth-scope input[type="radio"], .auth-wrap input[type="radio"] {
+  width: 16px; height: 16px; margin: 0;
+}
+.auth-scope .radio-grid.two, .auth-wrap .radio-grid.two {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 18px; align-items: center;
+}
+.auth-scope .radio, .auth-wrap .radio {
+  display: inline-flex; align-items: center; gap: 8px; font-size: 14px;
 }
 
-/* 2열 라디오 그리드 (성별/흡연 여부) */
-.radio-grid.two {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 18px;
-  align-items: center;
+/* 모바일 여백 보정 */
+@media (max-width: 420px) {
+  .auth-scope .auth-card, .auth-wrap .auth-card { padding: 22px; }
 }
-
-/* 라디오 항목 한 줄 */
-.radio {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-}
-
-/* (호환용) 가로 나열이 필요할 때 */
-.radio-row { display: flex; gap: 12px; flex-wrap: wrap; }

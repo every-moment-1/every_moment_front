@@ -1,89 +1,84 @@
 import axios from 'axios';
 import { authStore } from '../store/auth';
 
-// 환경에 맞게 수정 (예: import.meta.env.VITE_API_BASE_URL)
 const api = axios.create({
-  baseURL: '/api',
-  withCredentials: true, // HttpOnly 쿠키를 쓰는 경우 필요
-  timeout: 10_000,
+  // 개발: Vite 프록시(/api -> http://localhost:8080/api/school)와 함께 사용
+  // 운영: VITE_API_BASE에 백엔드 전체 URL을 넣어 사용
+  baseURL: import.meta.env.VITE_API_BASE || '/api',
+  withCredentials: false,
+  timeout: 10000,
 });
 
-/** 백엔드가 어디에 토큰을 주는지 선택 */
-const TOKEN_MODE = {
-  // 'cookie': 서버가 HttpOnly 쿠키로 액세스/리프레시를 관리
-  // 'json': 로그인 응답 JSON에 accessToken/refreshToken이 들어옴
-  type: 'json',
-  accessHeader: 'Authorization',   // Bearer 토큰 헤더명
-  refreshEndpoint: '/auth/refresh' // 토큰 재발급 엔드포인트
-};
-
-// 요청 인터셉터: json 모드일 때 Authorization 헤더 자동 첨부
+// 요청마다 액세스 토큰 자동 첨부
 api.interceptors.request.use((config) => {
-  if (TOKEN_MODE.type === 'json') {
-    const at = authStore.getAccessToken();
-    if (at) config.headers[TOKEN_MODE.accessHeader] = `Bearer ${at}`;
+  const at = authStore.getAccessToken && authStore.getAccessToken();
+  if (at) {
+    config.headers = config.headers || {};
+    config.headers.Authorization = `Bearer ${at}`;
   }
   return config;
 });
 
-// 응답 인터셉터: 401이면 자동 갱신 시도
-let refreshing = null;
+let isRefreshing = false;
+let subscribers = [];
+
+function subscribeTokenRefresh(cb) {
+  subscribers.push(cb);
+}
+function onRefreshed(token) {
+  subscribers.forEach((cb) => cb(token));
+  subscribers = [];
+}
+
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
-    const { config, response } = error;
-    if (!response) throw error;
+    const original = error.config || {};
+    const status = error?.response?.status;
 
-    // 이미 한 번 재시도한 요청은 무한루프 방지
-    if (response.status === 401 && !config._retry) {
-      config._retry = true;
+    // 로그인/회원가입은 토큰 갱신 X
+    const isAuth = /\/auth\/(login|register)/.test(original?.url || '');
 
+    if (status === 401 && !isAuth && !original._retry) {
+      original._retry = true;
+
+      if (isRefreshing) {
+        return new Promise((resolve) => {
+          subscribeTokenRefresh((token) => {
+            original.headers = original.headers || {};
+            if (token) original.headers.Authorization = `Bearer ${token}`;
+            resolve(api(original));
+          });
+        });
+      }
+
+      isRefreshing = true;
       try {
-        if (!refreshing) {
-          refreshing = (async () => {
-            if (TOKEN_MODE.type === 'json') {
-              // JSON 모드: refreshToken으로 재발급
-              const rt = authStore.getRefreshToken();
-              if (!rt) throw new Error('No refresh token');
-              const r = await axios.post(
-                `${api.defaults.baseURL}${TOKEN_MODE.refreshEndpoint}`,
-                { refreshToken: rt },
-                { withCredentials: true }
-              );
-              const { accessToken, refreshToken, user } = r.data || {};
-              if (!accessToken) throw new Error('No access token on refresh');
-              authStore.setTokens({ accessToken, refreshToken });
-              if (user) authStore.setUser(user);
-              return accessToken;
-            } else {
-              // 쿠키 모드: 서버가 쿠키로 재발급
-              await axios.post(
-                `${api.defaults.baseURL}${TOKEN_MODE.refreshEndpoint}`,
-                {},
-                { withCredentials: true }
-              );
-              // 쿠키 모드는 헤더 토큰이 없으니 그대로 진행
-              return 'cookie-mode';
-            }
-          })();
-        }
-        const newAccess = await refreshing;
-        refreshing = null;
+        const rt = authStore.getRefreshToken && authStore.getRefreshToken();
+        if (!rt) throw new Error('No refresh token');
 
-        // 원요청 재시도
-        if (TOKEN_MODE.type === 'json' && newAccess) {
-          config.headers[TOKEN_MODE.accessHeader] = `Bearer ${newAccess}`;
-        }
-        return api(config);
+        const resp = await api.post('/auth/refresh', { refreshToken: rt });
+        // 백엔드 래퍼 대응: data.data 또는 data
+        const payload = resp?.data?.data || resp?.data || {};
+        const { accessToken, refreshToken: newRT } = payload;
+
+        if (!accessToken) throw new Error('No accessToken from refresh');
+
+        authStore.setTokens({ accessToken, refreshToken: newRT || rt });
+        onRefreshed(accessToken);
+
+        original.headers = original.headers || {};
+        original.headers.Authorization = `Bearer ${accessToken}`;
+        return api(original);
       } catch (e) {
-        refreshing = null;
-        authStore.logout();
-        // 선택: 로그아웃 엔드포인트 호출
-        // await api.post('/auth/logout').catch(()=>{});
+        authStore.clear && authStore.clear();
         throw e;
+      } finally {
+        isRefreshing = false;
       }
     }
-    throw error;
+
+    return Promise.reject(error);
   }
 );
 

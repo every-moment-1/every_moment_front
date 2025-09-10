@@ -1,8 +1,9 @@
-// src/pages/RegisterPage.jsx (전체 교체해도 됨)
+// src/pages/RegisterPage.jsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axiosInstance';
 import { authStore } from '../store/auth';
+import '../styles/global.css'; // auth 전용 스타일(.auth-scope) 로드
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -27,59 +28,69 @@ export default function RegisterPage() {
     return '';
   };
 
+  // 백엔드 필드 매핑 도우미
+  const toUsername = (email) => {
+    let base = (email.split('@')[0] || 'user').replace(/[^a-zA-Z0-9_]/g, '_');
+    if (base.length < 3) base = base.padEnd(3, '_');
+    if (base.length > 20) base = base.slice(0, 20);
+    return base;
+  };
+  const toGenderInt = (g) => (g === 'MALE' ? 0 : 1); // 백엔드: 남=0, 여=1
+  const toSmokingBool = (s) => (s === 'YES');
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErr(''); setOk('');
+
     const v = validate();
     if (v) { setErr(v); return; }
 
     try {
       setLoading(true);
+
+      // 1) 회원가입
       await api.post('/auth/register', {
+        username: toUsername(form.email),
+        gender: toGenderInt(form.gender),
         email: form.email,
         password: form.password,
-        gender: form.gender,                 // 'MALE' | 'FEMALE'
-        smoking: form.smoking === 'YES',     // boolean으로 전송
+        smoking: toSmokingBool(form.smoking),
       });
 
-      // 자동 로그인 후 홈으로
+      // 2) 자동 로그인
       const loginRes = await api.post('/auth/login', {
         email: form.email,
         password: form.password,
       });
-      const { accessToken, refreshToken, user } = loginRes.data || {};
+      const { accessToken, refreshToken, user } = loginRes.data?.data || loginRes.data || {};
       if (accessToken) authStore.setTokens({ accessToken, refreshToken });
       if (user) authStore.setUser(user);
 
       setOk('회원가입이 완료되었습니다.');
-      navigate('/home', { replace: true });
+      navigate('/main', { replace: true });
     } catch (e) {
-      const msg = e?.response?.data?.message || e?.message || '회원가입에 실패했습니다.';
-      setErr(msg);
+      const status = e?.response?.status;
+      const serverMsg = e?.response?.data?.message;
+      if (status === 409) {
+        setErr(serverMsg || '이미 가입된 이메일입니다. 다른 이메일을 사용해 주세요.');
+      } else {
+        setErr(serverMsg || e?.message || '회원가입에 실패했습니다.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-wrap">
+    <div className="auth-scope">{/* ✅ global.css의 .auth-scope 범위 안에서만 스타일 적용 */}
       <div className="auth-card" role="main" aria-labelledby="register-title">
         <header className="auth-header">
-          <h1 id="register-title" className="brand">everymoment</h1>
+          <h1 id="register-title" className="brand">every-moment</h1>
           <p className="subtitle">회원가입</p>
         </header>
 
         <form onSubmit={handleSubmit} className="auth-form">
-          <label className="field">
-            <span className="field-label">이름</span>
-            <input
-              name="name" type="name" placeholder="이름을 입력해주세요."
-              value={form.name}
-              onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
-              autoComplete="name" required
-            />
-          </label>
-
+          {/* 성별 */}
           <fieldset className="field fieldset">
             <legend className="field-label">성별</legend>
             <div className="radio-grid two">
@@ -104,37 +115,49 @@ export default function RegisterPage() {
             </div>
           </fieldset>
 
+          {/* 이메일 */}
           <label className="field">
             <span className="field-label">아이디</span>
             <input
-              name="email" type="email" placeholder="이메일을 입력해주세요"
+              name="email"
+              type="email"
+              placeholder="이메일을 입력해주세요"
               value={form.email}
               onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))}
-              autoComplete="email" required
+              required
+              autoComplete="email"
             />
           </label>
 
+          {/* 비밀번호 */}
           <label className="field">
             <span className="field-label">비밀번호</span>
             <input
-              name="password" type="password" placeholder="비밀번호 입력(8자 이상)"
+              name="password"
+              type="password"
+              placeholder="8자 이상"
               value={form.password}
               onChange={(e) => setForm(f => ({ ...f, password: e.target.value }))}
-              autoComplete="new-password" required
+              required
+              autoComplete="new-password"
             />
           </label>
 
+          {/* 비밀번호 확인 */}
           <label className="field">
             <span className="field-label">비밀번호 확인</span>
             <input
-              name="confirmPassword" type="password" placeholder="비밀번호 재입력"
+              name="confirmPassword"
+              type="password"
+              placeholder="다시 입력"
               value={form.confirmPassword}
               onChange={(e) => setForm(f => ({ ...f, confirmPassword: e.target.value }))}
-              autoComplete="new-password" required
+              required
+              autoComplete="new-password"
             />
           </label>
 
-          {/* 흡연 여부: 2열 그리드 */}
+          {/* 흡연 여부 */}
           <fieldset className="field fieldset">
             <legend className="field-label">흡연 여부</legend>
             <div className="radio-grid two">
@@ -165,7 +188,8 @@ export default function RegisterPage() {
           <button type="submit" className="primary" disabled={loading}>
             {loading ? '처리 중…' : '회원가입'}
           </button>
-          <Link to="/" className="secondary linklike">로그인으로 돌아가기</Link>
+
+          <Link to="/" className="linklike">로그인으로 돌아가기</Link>
         </form>
       </div>
     </div>

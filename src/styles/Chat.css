@@ -1,0 +1,256 @@
+/* ===== Layout / Theme ===== */
+.chat-page {
+    --bg: #f5f5f5;
+    --card: #fff;
+    --border: #e5e7eb;
+    --text: #111;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+}
+
+/* ===== Topbar (검정 배경, 흰 아이콘) ===== */
+.cp-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: 48px 1fr auto;
+    align-items: center;
+    gap: 8px;
+    background: #111;
+    color: #fff;
+    padding: 10px 12px;
+}
+
+.cp-title {
+    font-weight: 800;
+    text-align: center;
+}
+
+.cp-actions {
+    display: inline-flex;
+    gap: 8px;
+}
+
+.cp-icon-btn {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    background: transparent;
+    border: none;
+    color: #fff;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* ===== Two-column layout ===== */
+.cp-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 12px;
+    padding: 12px;
+    min-height: calc(100vh - 62px);
+}
+
+/* ===== Left: chat list ===== */
+.cp-list {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 8px;
+    overflow: auto;
+}
+
+.cp-empty {
+    color: #666;
+    font-size: 14px;
+    padding: 16px;
+}
+
+.cp-list-item {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 10px;
+    align-items: center;
+    padding: 10px;
+    border-radius: 10px;
+    color: inherit;
+    text-decoration: none;
+}
+
+.cp-list-item:hover {
+    background: #f7f7f8;
+}
+
+.cp-list-item.active {
+    outline: 2px solid #11111a10;
+    background: #f2f2f3;
+}
+
+.cp-avatar {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #f3f4f6;
+    border: 1px solid var(--border);
+}
+
+.cp-li-main {
+    min-width: 0;
+}
+
+.cp-li-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.cp-li-time {
+    color: #999;
+    font-size: 12px;
+}
+
+.cp-li-last {
+    color: #666;
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ===== Right: chat room ===== */
+.cp-room {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.cp-placeholder {
+    margin: auto;
+    color: #777;
+}
+
+.cp-room-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.cp-back-mini {
+    display: none;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    color: #111;
+}
+
+.cp-peer {
+    font-weight: 800;
+}
+
+/* ===== Messages (회색 말풍선, 시간 우하단) ===== */
+.cp-messages {
+    flex: 1;
+    padding: 14px 12px;
+    overflow: auto;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cp-row {
+    display: flex;
+}
+
+.cp-row.me {
+    justify-content: flex-end;
+}
+
+.cp-row.them {
+    justify-content: flex-start;
+}
+
+.cp-bubble {
+    max-width: 72%;
+    padding: 10px 40px 10px 12px;
+    /* 시간 영역 확보 */
+    border-radius: 16px;
+    background: #f1f3f5;
+    color: #111;
+    position: relative;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, .03);
+}
+
+.cp-row.me .cp-bubble {
+    background: #e6e7ea;
+}
+
+/* 내 말풍선도 회색 */
+.cp-time {
+    position: absolute;
+    right: 10px;
+    bottom: 6px;
+    font-size: 11px;
+    color: #888;
+}
+
+/* ===== Composer (하단 입력 + 비행기) ===== */
+.cp-composer {
+    display: grid;
+    grid-template-columns: 1fr 46px;
+    gap: 8px;
+    padding: 10px;
+    border-top: 1px solid var(--border);
+    background: #fff;
+}
+
+.cp-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    outline: none;
+    background: #fff;
+}
+
+.cp-input:focus {
+    border-color: #111;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, .05);
+}
+
+.cp-send {
+    border: none;
+    border-radius: 999px;
+    background: #111;
+    color: #fff;
+    font-weight: 800;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 860px) {
+    .cp-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .cp-back-mini {
+        display: inline-grid;
+        place-items: center;
+    }
+}

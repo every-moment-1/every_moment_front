@@ -1,29 +1,36 @@
-// 단순 localStorage 기반 토큰 저장소
-const ACCESS_KEY = 'dm_access_token';
-const REFRESH_KEY = 'dm_refresh_token';
-const USER_KEY = 'dm_user';
+const LS = {
+  TOKENS: 'em_tokens',
+  USER: 'em_user',
+};
 
 export const authStore = {
+  getTokens() {
+    try { return JSON.parse(localStorage.getItem(LS.TOKENS)) || {}; } catch { return {}; }
+  },
   setTokens({ accessToken, refreshToken }) {
-    if (accessToken) localStorage.setItem(ACCESS_KEY, accessToken);
-    if (refreshToken) localStorage.setItem(REFRESH_KEY, refreshToken);
+    localStorage.setItem(LS.TOKENS, JSON.stringify({ accessToken, refreshToken }));
   },
-  getAccessToken() { return localStorage.getItem(ACCESS_KEY) || ''; },
-  getRefreshToken() { return localStorage.getItem(REFRESH_KEY) || ''; },
-  clearTokens() {
-    localStorage.removeItem(ACCESS_KEY);
-    localStorage.removeItem(REFRESH_KEY);
+  getAccessToken() {
+    return (this.getTokens().accessToken) || null;
   },
-  setUser(user) {
-    if (user) localStorage.setItem(USER_KEY, JSON.stringify(user));
+  getRefreshToken() {
+    return (this.getTokens().refreshToken) || null;
   },
   getUser() {
-    const raw = localStorage.getItem(USER_KEY);
-    try { return raw ? JSON.parse(raw) : null; } catch { return null; }
+    try { return JSON.parse(localStorage.getItem(LS.USER)) || null; } catch { return null; }
   },
-  clearUser() { localStorage.removeItem(USER_KEY); },
-  logout() {
-    authStore.clearTokens();
-    authStore.clearUser();
-  }
+  setUser(user) {
+    localStorage.setItem(LS.USER, JSON.stringify(user));
+  },
+  clear() {
+    localStorage.removeItem(LS.TOKENS);
+    localStorage.removeItem(LS.USER);
+  },
+  logout(api) {
+    const { refreshToken } = this.getTokens();
+    this.clear();
+    if (refreshToken && api) {
+      api.post('/auth/logout', { refreshToken }).catch(() => {});
+    }
+  },
 };

@@ -1,0 +1,261 @@
+:root {
+    --mp-accent: #0ea5e9;
+    /* 파란 로고/버튼 */
+    --mp-bg: #fafafa;
+    --mp-text: #111;
+    --mp-muted: #616161;
+    --mp-card: #ffffff;
+    --mp-line: #e5e7eb;
+    --mp-ok: #2e7d32;
+    --mp-warn: #c62828;
+    --mp-info: #1e88e5;
+}
+
+/* 기본 */
+.mp-wrap {
+    min-height: 100vh;
+    background: var(--mp-bg);
+    color: var(--mp-text);
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", Arial, sans-serif;
+}
+
+.mp-wrap * {
+    box-sizing: border-box;
+}
+
+/* ===== 헤더: 흰 배경 + 파란 로고 ===== */
+.mp-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 12px;
+    background: #fff;
+    color: #000;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--mp-line);
+}
+
+.mp-brand {
+    color: var(--mp-accent);
+    font-weight: 900;
+    font-size: 24px;
+    letter-spacing: .2px;
+    white-space: nowrap;
+}
+
+/* 우측 아이콘 */
+.mp-actions {
+    justify-self: end;
+    display: inline-flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.mp-icon-btn {
+    all: unset;
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    color: #111;
+    cursor: pointer;
+    border: 1px solid var(--mp-line);
+    background: #fff;
+}
+
+.mp-icon-btn:hover {
+    background: #f5f7f9;
+}
+
+.mp-icon-btn svg {
+    display: block;
+    stroke: currentColor;
+}
+
+/* 단순 프로필 원형 */
+.mp-profile-chip {
+    all: unset;
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    border: 1px solid var(--mp-line);
+    background: #fff;
+    color: #111;
+    cursor: pointer;
+}
+
+.mp-profile-chip:hover {
+    background: #f5f7f9;
+}
+
+.mp-avatar {
+    font-size: 18px;
+}
+
+/* ===== 히어로: 좌설명 + 우현황 카드 ===== */
+.mp-hero {
+    max-width: 1060px;
+    margin: 22px auto 0;
+    padding: 0 12px;
+    display: grid;
+    grid-template-columns: 1.15fr .85fr;
+    gap: 28px;
+}
+
+.mp-hero-left {
+    padding: 24px 10px;
+}
+
+.mp-title {
+    font-size: 36px;
+    margin: 8px 0 12px;
+    font-weight: 900;
+    letter-spacing: -.2px;
+}
+
+.mp-subtitle {
+    color: #222;
+    line-height: 1.9;
+    margin: 0 0 16px;
+    font-size: 18px;
+}
+
+.mp-cta-btn {
+    display: inline-block;
+    background: var(--mp-accent);
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 800;
+    box-shadow: 0 2px 0 rgba(0, 0, 0, .08);
+}
+
+.mp-cta-btn:hover {
+    filter: brightness(.96);
+}
+
+/* 현황 카드: 연한 회색 테두리, 살짝 라운드 */
+.mp-status-card {
+    background: #f9f9f9;
+    border: 1px solid #d9d9de;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 0 rgba(17, 17, 17, 0.03);
+}
+
+.mp-status-card h2 {
+    font-size: 18px;
+    margin: 0 0 12px;
+    font-weight: 900;
+}
+
+.mp-status-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 10px 10px 0;
+    display: grid;
+    gap: 10px;
+}
+
+.mp-status-card li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    background: #fff;
+    border: 1px solid var(--mp-line);
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+.mp-status-card .mp-ok {
+    color: var(--mp-ok);
+}
+
+.mp-status-card .mp-warn {
+    color: var(--mp-warn);
+}
+
+.mp-status-card .mp-info {
+    color: var(--mp-info);
+}
+
+.mp-ghost-btn {
+    display: inline-block;
+    margin-top: 6px;
+    background: #fff;
+    border: 1px solid var(--mp-line);
+    border-radius: 10px;
+    padding: 10px 12px;
+    text-decoration: none;
+    color: #222;
+    font-size: 14px;
+}
+
+.mp-ghost-btn:hover {
+    background: #f4f6f8;
+}
+
+/* ===== 게시판 ===== */
+.mp-boards {
+    max-width: 1060px;
+    margin: 22px auto 40px;
+    padding: 0 12px;
+}
+
+.mp-boards h2 {
+    font-size: 20px;
+    margin: 10px 0 12px;
+    font-weight: 900;
+}
+
+.mp-board-list {
+    display: grid;
+    gap: 12px;
+}
+
+.mp-board-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #fff;
+    border: 1px solid var(--mp-line);
+    border-radius: 12px;
+    padding: 12px;
+    text-decoration: none;
+    color: #111;
+    font-size: 15px;
+}
+
+.mp-board-item:hover {
+    background: #fbfbfb;
+}
+
+.mp-bi-emoji {
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--mp-line);
+    border-radius: 8px;
+    background: #fff;
+    font-size: 18px;
+}
+
+/* 반응형 */
+@media (max-width: 880px) {
+    .mp-hero {
+        grid-template-columns: 1fr;
+    }
+
+    .mp-status-card {
+        order: 2;
+    }
+}
