@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /* ===============================
    Auth-only scoped styles
    (.auth-scope 또는 .auth-wrap 내부에만 적용)
@@ -9,9 +10,19 @@
   --muted: #666;
   --primary: #111;
   --primary-fg: #fff;
+=======
+:root {
+  /* --bg: #0f0f10; */
+  --card: #ffffff;
+  --text: #111;
+  --muted: #666;
+  --primary: #111;    /* 버튼 배경 (검정) */
+  --primary-fg: #fff; /* 버튼 텍스트 */
+>>>>>>> 9c426cf4eaa12025e08ad87f82923547aa32aa89
   --border: #e5e7eb;
   --error: #e11d48;
 
+<<<<<<< HEAD
   min-height: 100vh;
   display: grid;
   place-items: center;
@@ -19,6 +30,11 @@
   background: var(--bg);
   color: var(--text);
 }
+=======
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: var(--bg); }
+>>>>>>> 9c426cf4eaa12025e08ad87f82923547aa32aa89
 
 /* 모든 요소 박스계산 통일 */
 .auth-scope *, .auth-wrap * { box-sizing: border-box; }
@@ -43,6 +59,7 @@
 .auth-scope .brand, .auth-wrap .brand { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: .2px; }
 .auth-scope .subtitle, .auth-wrap .subtitle { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
 
+<<<<<<< HEAD
 /* 폼 */
 .auth-scope .auth-form,
 .auth-wrap .auth-form { display: grid; gap: 16px; }
@@ -110,14 +127,39 @@
   font-size: 13px;
   border-radius: 0 12px 12px 0;
   cursor: pointer;
+=======
+.auth-form { display: grid; gap: 14px; }
+.field { display: grid; gap: 6px; }
+.field-label { font-size: 13px; color: #333; font-weight: 600; }
+input {
+  width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px;
+  font-size: 14px; outline: none; background: #fff;
+}
+input:focus { border-color: #111; box-shadow: 0 0 0 3px rgba(0,0,0,.06); }
+
+.pw-field { position: relative; }
+.pw-field input { padding-right: 64px; }
+.pw-toggle {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  border: 1px solid var(--border); background: #f7f7f7; padding: 6px 10px; border-radius: 8px;
+  font-size: 12px; cursor: pointer;
+>>>>>>> 9c426cf4eaa12025e08ad87f82923547aa32aa89
 }
 .auth-scope .pw-toggle:hover,
 .auth-wrap .pw-toggle:hover { background: #f7f7f8; }
 
+<<<<<<< HEAD
 /* 메시지/힌트 */
 .auth-scope .error, .auth-wrap .error {
   background: #fff1f2; color: var(--error);
   border: 1px solid #fecdd3; padding: 10px 12px; border-radius: 10px; font-size: 13px;
+=======
+.primary {
+  margin-top: 8px;
+  width: 100%; padding: 12px 14px; border: none; border-radius: 10px;
+  background: var(--primary); color: var(--primary-fg); font-weight: 700; font-size: 15px;
+  cursor: pointer;
+>>>>>>> 9c426cf4eaa12025e08ad87f82923547aa32aa89
 }
 .auth-scope .success, .auth-wrap .success {
   background: #ecfdf5; color: #059669;
@@ -126,6 +168,7 @@
 .auth-scope .hint, .auth-wrap .hint { font-size: 12px; margin-top: 4px; }
 .auth-scope .error-text, .auth-wrap .error-text { color: var(--error); }
 
+<<<<<<< HEAD
 /* 버튼 */
 .auth-scope .primary, .auth-wrap .primary {
   margin-top: 4px;
@@ -163,4 +206,16 @@
 /* 모바일 여백 보정 */
 @media (max-width: 420px) {
   .auth-scope .auth-card, .auth-wrap .auth-card { padding: 22px; }
+=======
+.linklike {
+  display: inline-block; text-align: center; margin-top: 8px;
+  padding: 10px 12px; width: 100%;
+  border: 1px solid var(--border); border-radius: 10px; color: #111; text-decoration: none;
+}
+.linklike:hover { background: #f8f8f8; }
+
+.error {
+  background: #fff1f2; color: var(--error);
+  border: 1px solid #fecdd3; padding: 10px 12px; border-radius: 10px; font-size: 13px;
+>>>>>>> 9c426cf4eaa12025e08ad87f82923547aa32aa89
 }

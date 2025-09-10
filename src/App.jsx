@@ -1,4 +1,5 @@
 import React from "react";
+<<<<<<< HEAD
 import { Routes, Route } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -10,11 +11,21 @@ import ChatPage from "./pages/ChatPage.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 
 export default function App() {
+=======
+import { Routes, Route } from 'react-router-dom'
+import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
+import ProfilePage from './pages/ProfilePage'
+import MainPage from './pages/MainPage'
+
+function App() {
+>>>>>>> 9c426cf4eaa12025e08ad87f82923547aa32aa89
   return (
     <Routes>
       {/* Public */}
       <Route path="/" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+<<<<<<< HEAD
 
       {/* Protected */}
       <Route
@@ -68,3 +79,11 @@ export default function App() {
     </Routes>
   );
 }
+=======
+      <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/main" element={<MainPage />} />
+    </Routes>
+  )
+}
+export default App;
+>>>>>>> 9c426cf4eaa12025e08ad87f82923547aa32aa89

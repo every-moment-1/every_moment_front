@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+<<<<<<< HEAD
 import "../styles/ProfilePage.css";
+=======
+import "./ProfilePage.css";
+>>>>>>> 9c426cf4eaa12025e08ad87f82923547aa32aa89
 
 export default function ProfilePage() {
     // 예시 상태 (실서비스에선 axios로 불러와 세팅)
@@ -95,4 +99,8 @@ export default function ProfilePage() {
             </main>
         </div>
     );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 9c426cf4eaa12025e08ad87f82923547aa32aa89
