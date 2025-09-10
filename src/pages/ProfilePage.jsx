@@ -32,7 +32,7 @@ export default function ProfilePage() {
         </Link>
         <h1 className="topbar-title">마이페이지</h1>
         <nav className="top-icons">
-          <Link to="/chat" className="icon-btn" aria-label="메시지">💬</Link>
+          <Link to="/messages" className="icon-btn" aria-label="메시지">💬</Link>
           <Link to="/profile" className="icon-btn" aria-label="프로필">👤</Link>
         </nav>
       </header>
