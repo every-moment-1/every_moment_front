@@ -14,6 +14,7 @@
   align-items: center;
   gap: 12px;
   background: #fff;
+  padding: 14px 18px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -47,6 +48,23 @@
   width: 30px;
   height: 30px;
   color: #111;
+}
+/* 단순 프로필 원형 */
+.profile-chip {
+    all: unset;
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    border: 1px solid var(--mp-line);
+    background: #f5f7f9;
+    color: #111;
+    cursor: pointer;
+}
+
+.profile-chip:hover {
+    background: #f5f7f9;
 }
 
 /* 본문 영역 */

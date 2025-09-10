@@ -36,7 +36,7 @@ export default function SurveyResultPage() {
         <div className="title">설문 조사 완료</div>
         <div className="top-actions">
           <button className="icon-btn ghost" aria-label="채팅">💬</button>
-          <Link to="/profile" className="icon-btn ghost" aria-label="프로필">👤</Link>
+          <Link to="/profile" className="profile-chip" aria-label="프로필">👤</Link>
           <button className="icon-btn ghost" aria-label="메뉴">≡</button>
         </div>
       </div>
