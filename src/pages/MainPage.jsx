@@ -21,7 +21,7 @@ export default function MainPage({
       <header className="mp-topbar">
         <div className="mp-brand">everymoment</div>
         <nav className="mp-actions">
-          <Link to="/messages" aria-label="메시지" className="mp-icon-btn">
+          <Link to="/chat" aria-label="메시지" className="mp-icon-btn">
             <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
               <path d="M20 2H4a2 2 0 0 0-2 2v14l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z" fill="none" stroke="currentColor" strokeWidth="2"/>
             </svg>
