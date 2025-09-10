@@ -8,6 +8,10 @@ import SurveyPage from "./pages/SurveyPage";
 import MatchResultsPage from "./pages/MatchResultsPage.jsx";
 import ChatPage from "./pages/ChatPage.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
+import BoardPage from "./pages/BoardPage"
+import BoardWritePage from "./pages/BoardWritePage"
+import BoardDetailPage from "./pages/BoardDetailPage";
+import BoardEditPage from "./pages/BoardEditPage";
 
 export default function App() {
   return (
@@ -56,15 +60,43 @@ export default function App() {
             <ChatPage />
           </ProtectedRoute>
         }
-      />
+      /> 
+
       <Route
-        path="/chat/:roomId"
+        path="/boards/:cat"
         element={
           <ProtectedRoute>
-            <ChatPage />
+            <BoardPage />
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/boards/:cat/write"
+        element={
+          <ProtectedRoute>
+            <BoardWritePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/boards/:cat/:id"
+        element={
+          <ProtectedRoute>
+            <BoardDetailPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/boards/:cat/:id/edit"
+        element={
+          <ProtectedRoute>
+            <BoardEditPage />
+          </ProtectedRoute>
+        }
+      />
+ 
+
     </Routes>
   );
 }
