@@ -41,7 +41,7 @@ export default function ProfilePage() {
       <main className="profile-card">
         <div className="avatar-wrap">
           <div className="avatar-circle" aria-hidden>👤</div>
-          <Link to="/survey/result" className="pill-btn">설문조사 결과</Link>
+          <Link to="/surveyResult" className="pill-btn">설문조사 결과</Link>
         </div>
 
         <form className="profile-form" onSubmit={onSubmit}>

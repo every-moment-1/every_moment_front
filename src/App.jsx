@@ -5,9 +5,11 @@ import RegisterPage from "./pages/RegisterPage";
 import ProfilePage from "./pages/ProfilePage";
 import MainPage from "./pages/MainPage";
 import SurveyPage from "./pages/SurveyPage";
+import SurveyResultpage from "./pages/SurveyResultPage.jsx";
 import MatchResultsPage from "./pages/MatchResultsPage.jsx";
 import ChatPage from "./pages/ChatPage.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
+import './styles/SurveyResultpage.css';
 
 export default function App() {
   return (
@@ -38,6 +40,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <SurveyPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/surveyResult"
+        element = {
+          <ProtectedRoute>
+            <SurveyResultpage/>
           </ProtectedRoute>
         }
       />
