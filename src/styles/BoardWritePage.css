@@ -1,0 +1,135 @@
+:root {
+    --bg: #f4f5f6;
+    --line: #e8e8e8;
+    --text: #111;
+    --muted: #7c7c7c;
+    --card: #fff;
+    --accent: #00A0DF;
+}
+
+.bw-wrap {
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Noto Sans KR", Segoe UI, Roboto, Arial, sans-serif;
+}
+
+/* 상단바 */
+.bw-topbar {
+    height: 56px;
+    background: #fff;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    align-items: center;
+}
+
+.bw-topbar h1 {
+    margin: 0;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.back-btn {
+    width: 40px;
+    height: 40px;
+    margin-left: 8px;
+    border: 0;
+    color: #111;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.right-icons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding-right: 8px;
+}
+
+.icon {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    color: #333;
+    background: transparent;
+    border: 0;
+    text-decoration: none;
+}
+
+.icon:hover {
+    background: #f1f3f5;
+}
+
+.write-form {
+    margin: 0 auto;
+    max-width: 780px;
+    padding: 30px 0;
+}
+
+/* 카테고리 레이블 */
+.bw-category {
+    max-width: 780px;
+    padding: 20px 12px;
+    color: #333;
+    font-weight: 600;
+    font-size: 20px;
+}
+
+/* 작성 카드 */
+.bw-card {
+    max-width: 780px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.bw-title {
+    width: 100%;
+    height: 44px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 0 12px;
+    font-size: 14px;
+    outline: none;
+    background: #fff;
+    margin-bottom: 12px;
+}
+
+.bw-content {
+    width: 100%;
+    min-height: 240px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    resize: vertical;
+    padding: 12px;
+    font-size: 14px;
+    outline: none;
+    background: #fff;
+}
+
+.bw-submit {
+    display: block;
+    margin: 16px auto 0;
+    padding: 10px 18px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.bw-submit:hover {
+    filter: brightness(.95);
+}
+
+@media (max-width: 720px) {
+    .bw-card {
+        margin: 0 12px;
+    }
+}

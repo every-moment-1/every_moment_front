@@ -5,11 +5,21 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      // 프론트에서 '/api'로 호출 → 백엔드 '/api/school'로 프록시
+      // ✅ 게시판 API는 /api/posts → 그대로 백엔드 /api/posts 로 전달 (rewrite 없음)
+      '/api/posts': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        // rewrite 하지 않음
+      },
+       '/api/comments': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      // ✅ 나머지는 /api → /api/school 로 rewrite (예: /api/user → /api/school/user)
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '/api/school'),
+        rewrite: (p) => p.replace(/^\/api/, '/api/school'),
       },
     },
   },

@@ -1,0 +1,254 @@
+:root {
+    --bg: #f4f5f6;
+    --card: #fff;
+    --line: #e8e8e8;
+    --text: #111;
+    --muted: #7c7c7c;
+    --accent: #1990ff;
+}
+
+.bp-wrap {
+    min-height: 100vh;
+    background: var(--bg);
+    font-family: system-ui, -apple-system, "Noto Sans KR", Segoe UI, Roboto, Arial, sans-serif;
+    color: var(--text);
+}
+
+/* 헤더 */
+.bp-topbar {
+    height: 56px;
+    background: #fff;
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+}
+
+.bp-topbar h1 {
+    margin: 0;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.back-btn {
+    width: 40px;
+    height: 40px;
+    margin-left: 8px;
+    border: 0;
+    color: #111;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+
+.topbar-title {
+    margin: 0;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: black;
+}
+
+.icon-btn {
+    background: transparent;
+    border: 0;
+    color: #fff;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+}
+
+.icon-btn:hover {
+    background: rgba(255, 255, 255, .12);
+}
+
+.profile-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgb(94 92 92 / 10%);
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 999px;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.profile-chip:hover {
+    background: rgba(92, 91, 91, 0.18);
+}
+
+
+/* 탭 & 상단바 */
+.bp-controls {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 4px 12px 0;
+}
+
+.tabs {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    overflow: auto;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.tab {
+    padding: 10px 0;
+    text-decoration: none;
+    color: #333;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+}
+
+.tab.active {
+    color: var(--accent);
+    border-color: var(--accent);
+    font-weight: 700;
+}
+
+/* 작성 + 검색 */
+.bar-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 2px;
+}
+
+.write-btn {
+    background: #1990ff;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 700;
+    padding: 8px 14px;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.search {
+    position: relative;
+    width: 280px;
+    max-width: 50%;
+}
+
+.search input {
+    box-sizing: border-box;
+    width: 100%;
+    height: 36px;
+    border-radius: 18px;
+    border: 1px solid var(--line);
+    padding: 0 38px 0 14px;
+    outline: none;
+    background: #fff;
+}
+
+.search .clear {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 26px;
+    height: 26px;
+    border: 0;
+    border-radius: 50%;
+    background: #f1f1f1;
+    cursor: pointer;
+}
+
+/* 목록 */
+.bp-list {
+    max-width: 980px;
+    margin: 0 auto;
+    background: #fff;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 70px 1fr 140px;
+    align-items: center;
+    height: 48px;
+    border-top: 1px solid var(--line);
+    padding: 0 12px;
+}
+
+.row:first-child {
+    border-top: none;
+}
+
+.no {
+    color: #444;
+}
+
+.title a {
+    color: #111;
+    text-decoration: none;
+    font-size: 15px;
+    display: block;
+}
+
+.title a:hover {
+    text-decoration: underline;
+}
+
+.date {
+    text-align: right;
+    color: #555;
+}
+
+.empty {
+    padding: 28px;
+    text-align: center;
+    color: var(--muted);
+}
+
+/* 페이지네이션 */
+.bp-pager {
+    max-width: 980px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 12px 0 20px;
+    color: #444;
+}
+
+.bp-pager button {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+
+.bp-pager button:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.page {
+    min-width: 80px;
+    text-align: center;
+    color: #555;
+}
+
+/* 반응형 */
+@media (max-width: 720px) {
+    .row {
+        grid-template-columns: 56px 1fr 110px;
+    }
+
+    .search {
+        max-width: 60%;
+        width: 200px;
+    }
+}
