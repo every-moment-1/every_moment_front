@@ -33,30 +33,54 @@ export default function BoardPage() {
     else setPage(1);
   }, [cat]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ✅ 목록 API 호출
+  const handleWrite = () => {
+    navigate(`/board/${cat}/write`);
+  };
+
   useEffect(() => {
     if (!current) return;
     const ctrl = new AbortController();
+    let mounted = true;
+
     (async () => {
       setLoading(true);
       setError("");
-      setQuery("");   // 탭 전환 시 검색 초기화(원하면 제거)
       try {
-        const catEnum = catToEnum(current.slug);          // slug → ENUM
+        const catEnum = catToEnum(current.slug);
+        console.log('[BoardPage] fetching', { slug: current.slug, catEnum });
+
         const data = await fetchPostsSimple({
           category: catEnum,
-          signal: ctrl.signal,
+          signal: ctrl.signal,   // axios/fetch가 취소 인지
         });
-        // data: [{ id, title, category, createdAt, ... }]
-        setRows(Array.isArray(data) ? data : []);
+
+        if (!mounted || ctrl.signal.aborted) return;
+
+        const list = Array.isArray(data) ? data
+          : Array.isArray(data?.content) ? data.content
+            : [];
+        setRows(list);
         setPage(1);
       } catch (e) {
-        setError("목록을 불러오지 못했습니다.");
+        // 👇 취소는 에러 표시하지 않음
+        const name = e?.name || e?.code;
+        const isCanceled =
+          name === 'CanceledError' || name === 'AbortError' ||
+          e?.message?.includes('canceled') || e?.message?.includes('aborted');
+        if (isCanceled || ctrl.signal.aborted || !mounted) return;
+
+        console.error('[BoardPage] fetch error:', e);
+        const msg = e?.response?.data?.message || e?.message || "목록을 불러오지 못했습니다.";
+        setError(msg);
       } finally {
-        setLoading(false);
+        if (mounted && !ctrl.signal.aborted) setLoading(false);
       }
     })();
-    return () => ctrl.abort();
+
+    return () => {
+      mounted = false;
+      ctrl.abort();
+    };
   }, [current?.slug]);
 
   // ✅ 검색/페이지네이션(클라이언트)
@@ -130,9 +154,15 @@ export default function BoardPage() {
         </nav>
 
         <div className="bar-row">
-          <Link className="write-btn" to={`/boards/${current?.slug || "free"}/write`}>
+          {/* <Link className="write-btn" to={`/boards/${current?.slug || "free"}/write`}>
             작성
-          </Link>
+          </Link> */}
+          {/* 공지(notice)가 아닐 때만 표시 */}
+          {current?.slug !== "notice" && (
+            <Link className="write-btn" to={`/boards/${current?.slug || "free"}/write`}>
+              작성
+            </Link>
+          )}
 
           <div className="search">
             <input
