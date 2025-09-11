@@ -18,7 +18,16 @@ export async function fetchPostsSimple({ category, signal } = {}) {
 // 상세: GET /api/posts/{id}
 export async function fetchPostDetail(id, { signal } = {}) {
   const { data } = await api.get(`/posts/${id}`, { signal });
-  return data;
+  if (!data)return data;
+
+  return {
+    ...data,
+    authorName: "익명",
+    comments: (data.comments || []).map(c => ({
+      ...c,
+      authorName: "익명",
+    })),
+  };
 }
 
 // 작성: POST /api/posts  (body: PostEntity와 호환되는 필드)
@@ -30,8 +39,26 @@ export async function createPostSimple({ category, title, content }) {
   return data; // 서버가 저장된 PostEntity를 그대로 반환
 }
 
+// 🔥 수정(추가): PATCH /api/posts/{id}
+export async function updatePost(id, { title, content }) {
+  const { data } = await api.patch(`/posts/${id}`, { title, content });
+  return data;
+}
+
 // 삭제: DELETE /api/posts/{id}
 export async function deletePost(id) {
   const { data } = await api.delete(`/posts/${id}`);
+  return data;
+}
+
+// 댓글 등록  🔥 추가
+export async function createComment(postId, content) {
+  const { data } = await api.post(`/comments/${postId}`, { content });
+  return data;
+}
+
+// 🔻 댓글 삭제: DELETE /api/comments/{commentId}
+export async function deleteComment(commentId) {
+  const { data } = await api.delete(`/comments/${commentId}`);
   return data;
 }

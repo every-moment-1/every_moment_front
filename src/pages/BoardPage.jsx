@@ -2,74 +2,89 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { NavLink, Link, useNavigate, useParams } from "react-router-dom";
 import "../styles/BoardPage.css";
-
-// ✅ 추가: 게시판 API 래퍼
 import { fetchPostsSimple, catToEnum } from "../api/posts";
 
 const CATS = [
-  { slug: "free", label: "자유 게시판", enum: "FREE" },
-  { slug: "notice", label: "공지 게시판", enum: "NOTICE" },
-  { slug: "matching", label: "매칭 게시판", enum: "MATCH" },
+  { slug: "free",          label: "자유 게시판",              enum: "FREE" },
+  { slug: "notice",        label: "공지 게시판",              enum: "NOTICE" },
+  { slug: "matching",      label: "매칭 게시판",              enum: "MATCH" },
   { slug: "find-roommate", label: "매칭 없이 룸메 찾기 게시판", enum: "FIND" },
 ];
 
 export default function BoardPage() {
   const { cat } = useParams();
   const navigate = useNavigate();
+
+  const [name] = useState("Admin");
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const pageSize = 10;
-  const [name] = useState("Admin");
 
-  const [rows, setRows] = useState([]);           // ✅ 목록 상태
-  const [loading, setLoading] = useState(true);   // ✅ 로딩/에러
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const current = CATS.find((c) => c.slug === cat);
+  const current = useMemo(() => CATS.find((c) => c.slug === cat), [cat]);
 
-  // 잘못된 카테고리 접근 시 기본값으로 이동
+  // 잘못된 카테고리면 기본 탭으로 이동
   useEffect(() => {
-    if (!current) navigate("/boards/free", { replace: true }); // 경로 통일
-    else setPage(1);
-  }, [cat]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!current) {
+      navigate("/boards/free", { replace: true });
+    } else {
+      setPage(1);
+    }
+  }, [current, navigate]);
 
-  // ✅ 목록 API 호출
+  // 목록 불러오기
   useEffect(() => {
     if (!current) return;
-    const ctrl = new AbortController();
+    const ac = new AbortController();
+
     (async () => {
-      setLoading(true);
-      setError("");
-      setQuery("");   // 탭 전환 시 검색 초기화(원하면 제거)
       try {
-        const catEnum = catToEnum(current.slug);          // slug → ENUM
-        const data = await fetchPostsSimple({
-          category: catEnum,
-          signal: ctrl.signal,
+        setLoading(true);
+        setError("");
+        setQuery(""); // 탭 전환 시 검색 초기화(원하면 제거)
+        const list = await fetchPostsSimple({
+          category: catToEnum(current.slug),
+          signal: ac.signal,
         });
-        // data: [{ id, title, category, createdAt, ... }]
-        setRows(Array.isArray(data) ? data : []);
+        if (ac.signal.aborted) return;
+        setRows(Array.isArray(list) ? list : []);
         setPage(1);
+        setError(""); // 성공 시 에러 초기화
       } catch (e) {
-        setError("목록을 불러오지 못했습니다.");
+        if (ac.signal.aborted || e?.code === "ERR_CANCELED" || e?.name === "CanceledError") return;
+        setError(e?.response?.data?.message || e.message || "목록을 불러오지 못했습니다.");
       } finally {
-        setLoading(false);
+        if (!ac.signal.aborted) setLoading(false);
       }
     })();
-    return () => ctrl.abort();
-  }, [current?.slug]);
 
-  // ✅ 검색/페이지네이션(클라이언트)
+    return () => ac.abort();
+  }, [current]);
+
+  // 검색 필터
   const filtered = useMemo(() => {
     if (!query.trim()) return rows;
     const q = query.toLowerCase().trim();
     return rows.filter((p) => (p.title || "").toLowerCase().includes(q));
   }, [rows, query]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const pageData = filtered
-    .slice((page - 1) * pageSize, page * pageSize)
-    .sort((a, b) => Number(b.id) - Number(a.id));
+  // 정렬 → 페이지네이션 (최신 id 우선)
+  const sorted = useMemo(
+    () => [...filtered].sort((a, b) => Number(b.id) - Number(a.id)),
+    [filtered]
+  );
+  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
+  const pageData = useMemo(
+    () => sorted.slice((page - 1) * pageSize, page * pageSize),
+    [sorted, page, pageSize]
+  );
+
+  // ✅ 번호 계산
+  const startIndex = (page - 1) * pageSize;
+  const top = sorted.length - startIndex; // 이 페이지의 첫 글 번호(가장 큼)
 
   const prev = () => setPage((p) => Math.max(1, p - 1));
   const next = () => setPage((p) => Math.min(totalPages, p + 1));
@@ -84,21 +99,29 @@ export default function BoardPage() {
         minute: "2-digit",
       });
     }
-    return v ?? ""; // 백엔드가 이미 "MM/DD HH:mm" 형식이면 그대로 표시
+    return v ?? "";
   };
 
   return (
     <div className="bp-wrap">
       {/* 상단 헤더 */}
       <header className="bp-topbar">
-        <Link to="/main" className="back-btn" aria-label="뒤로가기">
+        <button
+          className="back-btn"
+          aria-label="뒤로가기"
+          onClick={() => {
+            navigate("/main");
+          }}
+        >
           <svg viewBox="0 0 24 24" width="22" height="22">
             <path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-        </Link>
+        </button>
+
         <h1 className="topbar-title">게시판</h1>
+
         <nav className="top-icons">
-          <Link to="/messages" className="icon-btn" aria-label="메시지">
+          <Link to="/chat" className="icon-btn" aria-label="메시지">
             <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
               <path d="M20 2H4a2 2 0 0 0-2 2v14l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z" />
             </svg>
@@ -137,12 +160,17 @@ export default function BoardPage() {
           <div className="search">
             <input
               value={query}
-              onChange={(e) => { setQuery(e.target.value); setPage(1); }}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setPage(1);
+              }}
               placeholder="검색"
               aria-label="검색"
             />
             {query && (
-              <button className="clear" onClick={() => setQuery("")} aria-label="지우기">×</button>
+              <button className="clear" onClick={() => setQuery("")} aria-label="지우기">
+                ×
+              </button>
             )}
           </div>
         </div>
@@ -157,9 +185,11 @@ export default function BoardPage() {
         ) : pageData.length === 0 ? (
           <div className="empty">게시글이 없습니다.</div>
         ) : (
-          pageData.map((row) => (
+          pageData.map((row, idx) => (
             <div key={row.id} className="row">
-              <div className="no">{row.id}</div>
+              {/* ✅ 전통 번호: 최신이 가장 큰 번호 */}
+              <div className="no">{top - idx}</div>
+
               <div className="title">
                 <Link to={`/boards/${current.slug}/${row.id}`}>{row.title}</Link>
               </div>

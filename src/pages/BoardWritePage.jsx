@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
-import api from "../api/axiosInstance";
+import { createPostSimple, catToEnum } from "../api/posts";   // ✅ posts API 사용
 import "../styles/BoardWritePage.css";
 
 const CATS = [
@@ -16,10 +16,10 @@ export default function BoardWritePage() {
   const location = useLocation();
   const current = CATS.find((c) => c.slug === cat);
 
-  const [title, setTitle]   = useState("");
+  const [title, setTitle]     = useState("");
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState("");
+  const [err, setErr]         = useState("");
 
   useEffect(() => {
     if (!current) navigate("/boards/notice/write", { replace: true });
@@ -37,22 +37,19 @@ export default function BoardWritePage() {
     try {
       setLoading(true);
 
-      // ✅ 실제 업로드
       const payload = {
-        category: current.enum,
+        category: catToEnum(cat),           // ✅ posts.js의 매핑 사용
         title: title.trim(),
         content: content.trim(),
       };
-      const res = await api.post("/posts", payload);
 
-      // 백엔드가 { id: number } 또는 { data: { id } } 형태일 수 있음
-      const id = res?.data?.id ?? res?.data?.data?.id;
+      const saved = await createPostSimple(payload); // ✅ axios 직접 호출 대신 API 함수
+      const id = saved?.id ?? saved?.data?.id;       // 안전 추출
 
-      // 업로드 후 상세 페이지로 이동(없으면 목록으로 이동)
       if (id) navigate(`/boards/${cat}/${id}`, { replace: true });
       else    navigate(`/boards/${cat}`, { replace: true });
     } catch (e) {
-      // 401이면 로그인으로 보내기 (리프레시 실패 시)
+      // 401이면 로그인으로
       if (e?.response?.status === 401) {
         navigate("/login", { replace: true, state: { from: location } });
         return;
@@ -76,7 +73,7 @@ export default function BoardWritePage() {
         </button>
         <h1>게시판</h1>
         <div className="right-icons">
-          <Link to="/messages" className="icon" aria-label="메시지">
+          <Link to="/chat" className="icon" aria-label="메시지">
             <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
               <path d="M20 2H4a2 2 0 0 0-2 2v14l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z" fill="currentColor" />
             </svg>
