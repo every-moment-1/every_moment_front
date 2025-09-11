@@ -1,256 +1,303 @@
-/* ===== Layout / Theme ===== */
-.chat-page {
-    --bg: #f5f5f5;
+/* 네임스페이스: ch- (충돌 방지) */
+.ch-wrap {
+    --bg: #f6f7f9;
     --card: #fff;
-    --border: #e5e7eb;
-    --text: #111;
+    --line: #e5e7eb;
+    --ink: #111;
+    --muted: #6b7280;
+    --accent: #2d8cff;
     min-height: 100vh;
     background: var(--bg);
-    color: var(--text);
+    color: var(--ink);
     display: flex;
     flex-direction: column;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", Arial, sans-serif;
 }
 
-/* ===== Topbar (검정 배경, 흰 아이콘) ===== */
-.cp-topbar {
+.ch-wrap * {
+    box-sizing: border-box;
+}
+
+/* 상단바 */
+.ch-topbar {
     position: sticky;
     top: 0;
-    z-index: 10;
+    z-index: 20;
     display: grid;
     grid-template-columns: 48px 1fr auto;
     align-items: center;
     gap: 8px;
-    background: #111;
-    color: #fff;
-    padding: 10px 12px;
+    background: #fff;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
 }
 
-.cp-title {
-    font-weight: 800;
+.ch-top-title {
     text-align: center;
+    font-weight: 800;
 }
 
-.cp-actions {
+.ch-icon {
+    all: unset;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    color: #111;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.ch-icon.ghost:hover {
+    background: #f1f3f5;
+}
+
+.ch-top-actions {
     display: inline-flex;
     gap: 8px;
 }
 
-.cp-icon-btn {
-    width: 36px;
-    height: 36px;
+/* 본문 레이아웃 */
+.ch-body {
     display: grid;
-    place-items: center;
-    background: transparent;
-    border: none;
-    color: #fff;
-    text-decoration: none;
-    cursor: pointer;
-}
-
-/* ===== Two-column layout ===== */
-.cp-layout {
-    display: grid;
-    grid-template-columns: 320px 1fr;
+    grid-template-columns: 280px 1fr;
     gap: 12px;
     padding: 12px;
-    min-height: calc(100vh - 62px);
+    align-items: stretch;
 }
 
-/* ===== Left: chat list ===== */
-.cp-list {
+/* ===== 좌측 목록 ===== */
+.ch-sidebar {
     background: var(--card);
-    border: 1px solid var(--border);
+    border: 1px solid var(--line);
     border-radius: 12px;
+    overflow: hidden;
+}
+
+.ch-room-list {
+    list-style: none;
+    margin: 0;
     padding: 8px;
-    overflow: auto;
-}
-
-.cp-empty {
-    color: #666;
-    font-size: 14px;
-    padding: 16px;
-}
-
-.cp-list-item {
     display: grid;
-    grid-template-columns: 40px 1fr;
-    gap: 10px;
+    gap: 8px;
+}
+
+.ch-room {
+    display: flex;
     align-items: center;
-    padding: 10px;
+    justify-content: space-between;
+    gap: 8px;
+    border: 1px solid var(--line);
     border-radius: 10px;
-    color: inherit;
-    text-decoration: none;
+    padding: 10px;
+    cursor: pointer;
+    background: #fff;
 }
 
-.cp-list-item:hover {
-    background: #f7f7f8;
+.ch-room:hover {
+    background: #fafafa;
 }
 
-.cp-list-item.active {
-    outline: 2px solid #11111a10;
-    background: #f2f2f3;
+.ch-room.active {
+    outline: 2px solid rgba(45, 140, 255, .2);
 }
 
-.cp-avatar {
-    width: 40px;
-    height: 40px;
-    display: grid;
-    place-items: center;
-    border-radius: 50%;
-    background: #f3f4f6;
-    border: 1px solid var(--border);
-}
-
-.cp-li-main {
+.ch-room-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     min-width: 0;
 }
 
-.cp-li-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
+.ch-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    background: #f3f4f6;
+    display: grid;
+    place-items: center;
+    font-size: 16px;
 }
 
-.cp-li-time {
-    color: #999;
+.ch-room-main {
+    min-width: 0;
+}
+
+.ch-room-name {
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.ch-room-last {
+    color: var(--muted);
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+}
+
+.ch-room-time {
+    color: var(--muted);
     font-size: 12px;
 }
 
-.cp-li-last {
-    color: #666;
-    font-size: 13px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-/* ===== Right: chat room ===== */
-.cp-room {
+/* ===== 우측 패널 ===== */
+.ch-panel {
     background: var(--card);
-    border: 1px solid var(--border);
+    border: 1px solid var(--line);
     border-radius: 12px;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    min-height: 520px;
 }
 
-.cp-placeholder {
-    margin: auto;
-    color: #777;
-}
-
-.cp-room-head {
+.ch-panel-head {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     padding: 10px 12px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--line);
 }
 
-.cp-back-mini {
-    display: none;
+.ch-back {
+    all: unset;
+    font-size: 18px;
     width: 32px;
     height: 32px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: #fff;
-    color: #111;
-}
-
-.cp-peer {
-    font-weight: 800;
-}
-
-/* ===== Messages (회색 말풍선, 시간 우하단) ===== */
-.cp-messages {
-    flex: 1;
-    padding: 14px 12px;
-    overflow: auto;
-    background: #fff;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.cp-row {
-    display: flex;
-}
-
-.cp-row.me {
-    justify-content: flex-end;
-}
-
-.cp-row.them {
-    justify-content: flex-start;
-}
-
-.cp-bubble {
-    max-width: 72%;
-    padding: 10px 40px 10px 12px;
-    /* 시간 영역 확보 */
-    border-radius: 16px;
-    background: #f1f3f5;
-    color: #111;
-    position: relative;
-    box-shadow: 0 1px 0 rgba(0, 0, 0, .03);
-}
-
-.cp-row.me .cp-bubble {
-    background: #e6e7ea;
-}
-
-/* 내 말풍선도 회색 */
-.cp-time {
-    position: absolute;
-    right: 10px;
-    bottom: 6px;
-    font-size: 11px;
-    color: #888;
-}
-
-/* ===== Composer (하단 입력 + 비행기) ===== */
-.cp-composer {
-    display: grid;
-    grid-template-columns: 1fr 46px;
-    gap: 8px;
-    padding: 10px;
-    border-top: 1px solid var(--border);
-    background: #fff;
-}
-
-.cp-input {
-    width: 100%;
-    padding: 12px 14px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    outline: none;
-    background: #fff;
-}
-
-.cp-input:focus {
-    border-color: #111;
-    box-shadow: 0 0 0 3px rgba(0, 0, 0, .05);
-}
-
-.cp-send {
-    border: none;
-    border-radius: 999px;
-    background: #111;
-    color: #fff;
-    font-weight: 800;
-    cursor: pointer;
     display: grid;
     place-items: center;
+    border-radius: 8px;
+    cursor: pointer;
 }
 
-/* ===== Responsive ===== */
+.ch-back:hover {
+    background: #f3f4f6;
+}
+
+.ch-peer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ch-peer-avatar {
+    all: unset;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: #f3f4f6;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+}
+
+.ch-peer-name {
+    font-weight: 800;
+}
+
+/* 메시지 영역 */
+.ch-msgs {
+    flex: 1;
+    overflow: auto;
+    padding: 12px;
+    display: grid;
+    gap: 8px;
+    background: #fff;
+}
+
+.msg-row {
+    display: grid;
+    gap: 4px;
+    align-content: start;
+}
+
+.msg-row.peer {
+    justify-items: start;
+    grid-template-columns: auto;
+}
+
+.msg-row.my {
+    justify-items: end;
+    grid-template-columns: auto;
+}
+
+.bubble {
+    max-width: min(72ch, 80%);
+    padding: 10px 12px;
+    border-radius: 16px;
+    background: #f3f4f6;
+    color: #111;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.msg-row.my .bubble {
+    background: var(--accent);
+    color: #fff;
+}
+
+.time {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+/* 입력 바 */
+.ch-inputbar {
+    display: grid;
+    grid-template-columns: 1fr 42px;
+    gap: 8px;
+    padding: 10px;
+    border-top: 1px solid var(--line);
+    background: #fff;
+}
+
+.ch-input {
+    height: 40px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    padding: 0 14px;
+    outline: none;
+    font-size: 14px;
+    background: #fff;
+}
+
+.ch-input:focus {
+    border-color: #b9c1cb;
+    box-shadow: 0 0 0 3px rgba(45, 140, 255, .12);
+}
+
+.ch-send {
+    all: unset;
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    background: #f3f4f6;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+}
+
+.ch-send:hover {
+    filter: brightness(.97);
+}
+
+/* 비어있을 때 */
+.ch-empty {
+    flex: 1;
+    display: grid;
+    place-items: center;
+    color: var(--muted);
+}
+
+/* 반응형 */
 @media (max-width: 860px) {
-    .cp-layout {
+    .ch-body {
         grid-template-columns: 1fr;
     }
 
-    .cp-back-mini {
-        display: inline-grid;
-        place-items: center;
+    .ch-panel {
+        min-height: 60vh;
     }
 }

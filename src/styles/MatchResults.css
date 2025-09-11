@@ -1,10 +1,12 @@
+/* Match Results – light UI */
 .match-page {
-    --bg: #0f0f10;
+    --bg: #f6f7f9;
     --card: #fff;
     --text: #111;
     --muted: #666;
     --border: #e5e7eb;
-    --primary: #111;
+    --primary: #2d8cff;
+    /* 파란 포인트 */
     --primary-fg: #fff;
     min-height: 100vh;
     background: var(--bg);
@@ -13,7 +15,7 @@
     flex-direction: column;
 }
 
-/* Topbar */
+/* Topbar (흰색 상단 바) */
 .mp-topbar {
     position: sticky;
     top: 0;
@@ -50,7 +52,7 @@
     gap: 8px;
 }
 
-/* Filters */
+/* Filters (카드 형태 박스) */
 .mp-filters {
     background: transparent;
     padding: 12px;
@@ -108,7 +110,15 @@
     margin: 8px 2px 12px;
     font-size: 16px;
     font-weight: 700;
-    color: #fff;
+    color: #111;
+    /* 밝은 톤 */
+}
+
+/* (선택) 문구 일부를 파랗게 강조하고 싶다면 JSX에서 <span class="mp-accent">로 감싸기 */
+.mp-lead .mp-accent {
+    color: var(--primary);
+    text-decoration: underline;
+    font-weight: 800;
 }
 
 .mp-error {
@@ -146,7 +156,7 @@
     border: 1px solid var(--border);
     border-radius: 14px;
     padding: 14px;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, .06);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, .05);
 }
 
 .mp-avatar {
@@ -191,7 +201,7 @@
     margin-top: 4px;
 }
 
-/* Similarity progress */
+/* Similarity progress (은은한 바 + 파란 진행) */
 .mp-progress {
     height: 8px;
     background: #f1f5f9;
@@ -204,21 +214,23 @@
 .mp-progress>span {
     display: block;
     height: 100%;
-    background: #111;
+    background: var(--primary);
 }
 
-/* Actions */
+/* Actions – 파란 ‘채팅하기’ 버튼 */
 .mp-chat-btn {
     padding: 8px 12px;
     border-radius: 999px;
-    border: 1px solid var(--border);
-    background: #f6f7f8;
-    cursor: pointer;
+    border: none;
+    background: var(--primary);
+    color: var(--primary-fg);
     font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, .08);
 }
 
 .mp-chat-btn:hover {
-    background: #eef0f2;
+    filter: brightness(.96);
 }
 
 /* Skeletons */
@@ -282,7 +294,8 @@
     padding: 12px 0;
 }
 
-@media (max-width: 720px) {
+/* Responsive */
+@media (max-width:720px) {
     .mp-filter-row {
         grid-template-columns: 1fr 1fr;
     }

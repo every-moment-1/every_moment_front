@@ -1,168 +1,138 @@
 /* ===============================
-   Auth-only scoped styles
-   (.auth-scope 또는 .auth-wrap 내부에만 적용)
+   Auth-only scoped styles (Login / Register)
+   .auth-wrap 내부에만 적용
 ================================ */
-.auth-scope,
 .auth-wrap {
-  --bg: #0f0f10;
+  /* Light theme tokens */
+  --bg: #f7f8fa;
   --card: #ffffff;
-  --text: #111;
-  --muted: #666;
-  --primary: #111;
-  --primary-fg: #fff;
+  --text: #222;
+  --muted: #6b7280;
   --border: #e5e7eb;
+  --accent: #1ea7ff;
+  /* 파란 포인트 */
+  --accent-ink: #0b5fa1;
+  /* 진한 파랑(hover/활성 텍스트) */
   --error: #e11d48;
 
   min-height: 100vh;
   display: grid;
   place-items: center;
-  padding: 32px 16px;
+  padding: 36px 16px;
   background: var(--bg);
   color: var(--text);
 }
 
-/* 모든 요소 박스계산 통일 */
-.auth-scope *,
 .auth-wrap * {
   box-sizing: border-box;
 }
 
-/* 카드 */
-.auth-scope .auth-card,
-.auth-wrap .auth-card {
+/* ---------- Card ---------- */
+.auth-card {
   width: min(520px, 100%);
   background: var(--card);
   color: var(--text);
-  border-radius: 18px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, .12);
-  padding: 28px;
-  position: relative;
+  border-radius: 14px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 28px rgba(15, 23, 42, .06);
   overflow: hidden;
-  /* ✅ 내부 요소가 삐져나오지 않도록 */
-  border: 1px solid rgba(17, 17, 17, 0.06);
+  /* 내부 요소 튀어나옴 방지 */
 }
 
-/* 헤더 */
-.auth-scope .auth-header,
-.auth-wrap .auth-header {
-  text-align: left;
-  margin-bottom: 20px;
+/* ---------- Header / Brand ---------- */
+.auth-header {
+  text-align: center;
+  margin-bottom: 16px;
 }
 
-.auth-scope .brand,
-.auth-wrap .brand {
+.brand {
   margin: 0;
-  font-size: 26px;
   font-weight: 800;
+  font-size: 22px;
   letter-spacing: .2px;
+  color: var(--accent);
+  /* 시안처럼 파란 로고 색 */
 }
 
-.auth-scope .subtitle,
-.auth-wrap .subtitle {
+.subtitle {
   margin: 6px 0 0;
   color: var(--muted);
   font-size: 13px;
 }
 
-/* 폼 */
-.auth-scope .auth-form,
-.auth-wrap .auth-form {
+/* ---------- Form ---------- */
+.auth-form {
   display: grid;
-  gap: 16px;
+  gap: 14px;
 }
 
-/* 라벨/필드 공통 */
-.auth-scope .field,
-.auth-wrap .field {
+.field {
   display: grid;
   gap: 8px;
 }
 
-.auth-scope .field-label,
-.auth-wrap .field-label {
+.field-label {
   font-size: 13px;
   color: #2b2b2b;
   font-weight: 700;
 }
 
-/* 텍스트 계열 인풋 */
-.auth-scope input[type="text"],
-.auth-scope input[type="email"],
-.auth-scope input[type="password"],
-.auth-scope input[type="search"],
-.auth-scope input[type="tel"],
-.auth-scope input[type="url"],
-.auth-scope input[type="number"],
-.auth-scope input[type="date"],
-.auth-scope input[type="time"],
+/* Inputs */
 .auth-wrap input[type="text"],
 .auth-wrap input[type="email"],
 .auth-wrap input[type="password"],
 .auth-wrap input[type="search"],
 .auth-wrap input[type="tel"],
 .auth-wrap input[type="url"],
-.auth-wrap input[type="number"],
-.auth-wrap input[type="date"],
-.auth-wrap input[type="time"] {
+.auth-wrap input[type="number"] {
   width: 100%;
-  max-width: 100%;
-  /* ✅ 부모 영역 넘지 않게 */
-  height: 48px;
-  padding: 12px 14px;
+  height: 44px;
+  padding: 10px 12px;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 10px;
+  background: #fff;
   font-size: 14px;
   outline: none;
-  background: #fff;
   transition: box-shadow .15s ease, border-color .15s ease;
   appearance: none;
 }
 
-.auth-scope input:focus,
 .auth-wrap input:focus {
-  border-color: #111;
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, .06);
+  border-color: #b7dfff;
+  box-shadow: 0 0 0 3px rgba(30, 167, 255, .15);
 }
 
-/* 비밀번호 보기 토글이 있는 필드 */
-.auth-scope .pw-field,
-.auth-wrap .pw-field {
+/* Password toggle (input 안쪽 우측) */
+.pw-field {
   position: relative;
-  width: 100%;
 }
 
-.auth-scope .pw-field input,
-.auth-wrap .pw-field input {
-  padding-right: 56px;
-  /* ✅ 우측 토글 공간 확보 */
+.pw-field input {
+  padding-right: 64px;
 }
 
-/* 토글 버튼을 입력창 "안쪽" 오른쪽에 붙이기 */
-.auth-scope .pw-toggle,
-.auth-wrap .pw-toggle {
+.pw-toggle {
   position: absolute;
   top: 0;
   right: 0;
   height: 100%;
   padding: 0 12px;
   border: 0;
-  /* ✅ 테두리/배경 제거 → 카드 밖으로 튀어나와 보이지 않음 */
   border-left: 1px solid var(--border);
   background: transparent;
-  color: #555;
+  color: #526070;
   font-size: 13px;
-  border-radius: 0 12px 12px 0;
+  border-radius: 0 10px 10px 0;
   cursor: pointer;
 }
 
-.auth-scope .pw-toggle:hover,
-.auth-wrap .pw-toggle:hover {
+.pw-toggle:hover {
   background: #f7f7f8;
 }
 
-/* 메시지/힌트 */
-.auth-scope .error,
-.auth-wrap .error {
+/* Messages */
+.error {
   background: #fff1f2;
   color: var(--error);
   border: 1px solid #fecdd3;
@@ -171,8 +141,7 @@
   font-size: 13px;
 }
 
-.auth-scope .success,
-.auth-wrap .success {
+.success {
   background: #ecfdf5;
   color: #059669;
   border: 1px solid #a7f3d0;
@@ -181,93 +150,113 @@
   font-size: 13px;
 }
 
-.auth-scope .hint,
-.auth-wrap .hint {
+.hint {
   font-size: 12px;
   margin-top: 4px;
 }
 
-.auth-scope .error-text,
-.auth-wrap .error-text {
+.error-text {
   color: var(--error);
 }
 
-/* 버튼 */
-.auth-scope .primary,
-.auth-wrap .primary {
-  margin-top: 4px;
+/* ---------- Buttons ---------- */
+.primary {
   width: 100%;
-  height: 48px;
-  padding: 12px 14px;
-  border: none;
-  border-radius: 12px;
-  background: var(--primary);
-  color: var(--primary-fg);
+  height: 44px;
+  border-radius: 10px;
   font-weight: 800;
   font-size: 15px;
   cursor: pointer;
+  transition: filter .12s ease, background-color .12s ease, color .12s ease, border-color .12s ease;
 }
 
-.auth-scope .primary:disabled,
-.auth-wrap .primary:disabled {
-  opacity: .6;
-  cursor: not-allowed;
+/* 회원가입(기본) = 파란 솔리드 */
+.auth-wrap.register .primary,
+.auth-wrap:not(.login) .primary {
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
 }
 
-.auth-scope .linklike,
-.auth-wrap .linklike {
+.auth-wrap.register .primary:hover,
+.auth-wrap:not(.login) .primary:hover {
+  filter: brightness(.97);
+}
+
+/* 로그인 페이지 = 파란 아웃라인 */
+.auth-wrap.login .primary {
+  border: 1px solid var(--accent);
+  background: #fff;
+  color: var(--accent);
+}
+
+.auth-wrap.login .primary:hover {
+  background: #f3faff;
+}
+
+/* 링크 버튼(아래 ‘회원가입’ 등) */
+.linklike {
   display: inline-block;
-  text-align: center;
   margin-top: 8px;
-  padding: 12px 14px;
-  width: 100%;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  color: #111;
+  color: var(--muted);
   text-decoration: none;
+  font-size: 13px;
 }
 
-.auth-scope .linklike:hover,
-.auth-wrap .linklike:hover {
-  background: #f8f8f8;
+.linklike:hover {
+  color: var(--accent-ink);
 }
 
-/* Fieldset & Radio */
-.auth-scope .fieldset,
-.auth-wrap .fieldset {
+/* ---------- Fieldset & Radio (회원가입 옵션들) ---------- */
+.fieldset {
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 12px 14px 10px;
+  padding: 12px;
 }
 
-.auth-scope input[type="radio"],
-.auth-wrap input[type="radio"] {
+.radio-grid.two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+  align-items: center;
+}
+
+.radio {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 14px;
+}
+
+input[type="radio"] {
   width: 16px;
   height: 16px;
   margin: 0;
 }
 
-.auth-scope .radio-grid.two,
-.auth-wrap .radio-grid.two {
+/* ---------- Register Topbar (←  회원 가입  ) ---------- */
+.auth-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 18px;
+  grid-template-columns: 48px 1fr 48px;
   align-items: center;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
 }
 
-.auth-scope .radio,
-.auth-wrap .radio {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
+.top-title {
+  text-align: center;
+  font-weight: 800;
 }
 
 /* 모바일 여백 보정 */
 @media (max-width: 420px) {
-
-  .auth-scope .auth-card,
-  .auth-wrap .auth-card {
-    padding: 22px;
+  .auth-card {
+    padding: 20px;
   }
 }

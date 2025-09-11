@@ -18,13 +18,12 @@
 /* 헤더 */
 .profile-topbar {
     height: 64px;
+    background: var(--brand);
     color: #fff;
     display: grid;
-    background-color: white;
     grid-template-columns: 56px 1fr auto;
     align-items: center;
     padding: 0 10px;
-    border-bottom: 1px solid var(--border);
 }
 
 .back-btn {
@@ -95,7 +94,7 @@
 /* 아바타 아래 pill 버튼(검정) */
 .pill-btn {
     display: inline-block;
-    background-color: #0ea5e9;
+    background: #111;
     color: #fff;
     padding: 10px 16px;
     border-radius: 999px;
@@ -154,7 +153,7 @@
     min-width: 120px;
     padding: 10px 16px;
     border-radius: 10px;
-    background-color: #0ea5e9;
+    background: #4a4a4a;
     color: #fff;
     border: none;
     font-weight: 600;
