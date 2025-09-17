@@ -1,215 +1,393 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import api from '../api/axiosInstance';
-import '../styles/MatchResults.css';
-import { chatStore } from '../store/chatStore';
+// src/pages/MatchResultsPage.jsx
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { getRecommendations, getMatchResult } from "../api/matchApi";
+import { authStore } from "../store/auth";
+import "../styles/MatchResultPage.css";
+import axios from "axios";
+import api from "../api/axiosInstance";
 
-export default function MatchResultsPage() {
-  const navigate = useNavigate();
+/** 성별 라벨: 0/남성, 1/여성 */
+const toGenderLabel = (g) => {
+  if (g === null || g === undefined) return "정보 없음";
+  if (typeof g === "number") return g === 0 ? "남성" : g === 1 ? "여성" : "정보 없음";
+  const s = String(g).trim().toLowerCase();
+  if (["0", "male", "m", "남", "남성", "남자"].includes(s)) return "남성";
+  if (["1", "female", "f", "여", "여성", "여자"].includes(s)) return "여성";
+  return "정보 없음";
+};
 
-  // ▼ 필터 & 목록 상태
-  const [items, setItems] = useState([]);            // 누적 결과
-  const [page, setPage] = useState(0);               // 0-base
-  const [hasNext, setHasNext] = useState(true);
-  const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState('');
+/** 흡연 라벨: Boolean/문자열 → '흡연' / '비흡연' (없으면 '정보 없음') */
+const toSmokingLabel = (v) => {
+  if (v === null || v === undefined) return "정보 없음";
+  if (typeof v === "boolean") return v ? "흡연" : "비흡연";
+  const s = String(v).trim().toLowerCase();
+  if (["true", "1", "y", "yes", "smoker", "흡연", "흡연자"].includes(s)) return "흡연";
+  if (["false", "0", "n", "no", "nonsmoker", "non-smoker", "비흡연", "비흡연자"].includes(s))
+    return "비흡연";
+  return "정보 없음";
+};
 
-  const [filters, setFilters] = useState({
-    gender: 'ALL',           // 'MALE' | 'FEMALE' | 'ALL'
-    smoking: 'ALL',          // 'YES' | 'NO' | 'ALL'
-    minScore: 0,             // 0~100
-    q: ''                    // 닉네임 등 검색
+/**
+ * 특정 사용자 프로필 조회: /api/school/users/{userId} (UserDTO)
+ * - api 인스턴스를 사용해 인터셉터/리프레시 활용
+ * - 200이 아니면 null 반환(콘솔 스팸 방지)
+ */
+const fetchUserProfile = async (userId) => {
+  const base = import.meta.env.VITE_API_BASE ?? "/api";
+  try {
+    const res = await api.get(`${base}/school/users/${userId}`, {
+      // 401이어도 throw하지 않고 아래에서 분기
+      validateStatus: () => true,
+    });
+    if (res.status !== 200) return null;
+    return res?.data?.data ?? res?.data ?? null;
+  } catch {
+    return null;
+  }
+};
+
+/** 추천 목록에 성별/흡연 정보 보강 */
+const enrichWithGenderSmoking = async (list) => {
+  if (!Array.isArray(list)) return [];
+  const cache = new Map();
+
+  const jobs = list.map(async (it) => {
+    const opponentId = it.userId ?? it.matchUserId ?? it.id;
+
+    // 추천 응답에 성별이 담겨 있으면 우선 사용
+    let gender =
+      it.gender ?? it.userGender ?? it.roommateGender ?? it.sex ?? it.genderCode ?? null;
+    // 흡연은 보통 없음 → 프로필에서 확보
+    let smoking =
+      it.smoking ??
+      it.isSmoker ??
+      it.smoker ??
+      it.smokingStatus ??
+      it.smokeYn ??
+      it.smoke ??
+      it.smokingHabit ??
+      null;
+
+    if (!opponentId || (gender != null && smoking != null)) {
+      return { ...it, gender, smoking };
+    }
+
+    try {
+      if (!cache.has(opponentId)) {
+        cache.set(opponentId, fetchUserProfile(opponentId));
+      }
+      const profile = await cache.get(opponentId);
+      if (profile) {
+        gender =
+          gender ??
+          profile.gender ??
+          profile.userGender ??
+          profile.roommateGender ??
+          profile.sex ??
+          profile.genderCode ??
+          null;
+        smoking =
+          smoking ??
+          profile.smoking ??
+          profile.isSmoker ??
+          profile.smoker ??
+          profile.smokingStatus ??
+          profile.smokeYn ??
+          profile.smoke ??
+          profile.smokingHabit ??
+          null;
+      }
+    } catch {
+      // 무시
+    }
+
+    return { ...it, gender, smoking };
   });
 
-  const canLoadMore = hasNext && !loading;
+  return Promise.all(jobs);
+};
 
-  const fetchPage = async (nextPage = 0, append = false) => {
-    setErr('');
-    setLoading(true);
+export default function MatchResultsPage({ currentUser }) {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [items, setItems] = useState([]);
+
+  // ▼ 메뉴 드롭다운 상태 & 외부 클릭 닫기
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (!menuRef.current) return;
+      if (!menuRef.current.contains(e.target)) setMenuOpen(false);
+    };
+    document.addEventListener("click", onDocClick);
+    return () => document.removeEventListener("click", onDocClick);
+  }, []);
+
+  // 내 userId
+  const userId = useMemo(() => {
+    if (currentUser?.id) return currentUser.id;
+    const storedUser = authStore.getUser?.();
+    if (storedUser?.id) return storedUser.id;
+    const alt =
+      Number(localStorage.getItem("userId")) ||
+      Number(localStorage.getItem("userid")) ||
+      Number(localStorage.getItem("memberId"));
+    return Number.isFinite(alt) && alt > 0 ? alt : undefined;
+  }, [currentUser]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setLoading(true);
+        setError("");
+        if (!userId) {
+          setItems([]);
+          setError("로그인 정보가 없어 추천을 불러올 수 없어요. (userId 없음)");
+          return;
+        }
+        // 1) 추천 목록
+        const list = await getRecommendations(userId);
+        // 2) 성별/흡연 정보 보강
+        const enriched = await enrichWithGenderSmoking(Array.isArray(list) ? list : []);
+        if (!mounted) return;
+        setItems(enriched);
+      } catch (e) {
+        setError(e?.message || "추천 목록을 불러오지 못했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [userId]);
+
+  const displayName =
+    currentUser?.nickname ||
+    currentUser?.username ||
+    authStore.getUser?.()?.username ||
+    localStorage.getItem("username") ||
+    "Admin";
+
+  const startChatWith = async (opponentUserId) => {
     try {
-      const res = await api.get('/match/results', {
-        params: {
-          page: nextPage,
-          size: 10,
-          gender: filters.gender !== 'ALL' ? filters.gender : undefined,
-          smoking: filters.smoking !== 'ALL' ? (filters.smoking === 'YES') : undefined,
-          minScore: filters.minScore || undefined,
-          q: filters.q || undefined,
-        },
-      });
-
-      // 기대 응답: { items: [{id,name,age,gender,smoking,similarity,tags?:string[]}], page, hasNext }
-      const { items: list = [], hasNext: hn = false } = res.data || {};
-      setItems((prev) => (append ? [...prev, ...list] : list));
-      setHasNext(hn);
-      setPage(nextPage);
+      const tokens = JSON.parse(localStorage.getItem("em_tokens") || "{}");
+      const accessToken = tokens.accessToken;
+      if (!accessToken) {
+        alert("로그인이 필요합니다.");
+        return;
+      }
+      const base = import.meta.env.VITE_API_BASE ?? "/api";
+      const { data } = await axios.post(
+        `${base}/chat/rooms`,
+        { opponentUserId },
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      const roomId = data?.id;
+      navigate(roomId ? `/chat/${roomId}` : "/chat");
     } catch (e) {
-      const msg = e?.response?.data?.message || e.message || '매칭 결과를 불러오지 못했습니다.';
-      setErr(msg);
-    } finally {
-      setLoading(false);
+      console.error("채팅방 생성 실패:", e);
+      alert("채팅방 생성에 실패했습니다.");
     }
   };
 
-  // 최초 & 필터 변경 시 1페이지 로드
-  useEffect(() => {
-    fetchPage(0, /*append=*/false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters.gender, filters.smoking, filters.minScore]);
+  // ▼ 로그아웃 핸들러
+  const handleLogout = async () => {
+    try {
+      const tokens = JSON.parse(localStorage.getItem("em_tokens") || "{}");
+    const accessToken = tokens?.accessToken;
+      const refreshToken = tokens?.refreshToken;
 
-  const onSearch = (e) => {
-    e.preventDefault();
-    fetchPage(0, false);
-  };
+      const base = import.meta.env.VITE_API_BASE ?? "/api";
+      if (refreshToken) {
+        await api
+          .post(
+            `${base}/logout`,
+            { refreshToken },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+              },
+            }
+          )
+          .catch(() => {});
+      }
 
-  const scoreLabel = (s) => `${Math.round(s)}%`;
+      localStorage.removeItem("em_tokens");
+      localStorage.removeItem("em_user");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("userid");
+      localStorage.removeItem("memberId");
 
-  // 데모용: 빈 응답일 때 안내문
-  const empty = useMemo(() => !loading && items.length === 0, [loading, items.length]);
+      try {
+        const { authStore } = await import("../store/auth");
+        authStore?.logout?.();
+      } catch {}
 
-  // ✅ 매칭 대상과의 채팅방 보장 후 이동
-  const openChat = (cand) => {
-    const roomId = chatStore.ensureRoom({
-      peerId: cand.id,
-      peerName: cand.name || '익명',
-    });
-    navigate(`/chat/${roomId}`);
+      navigate("/", { replace: true });
+    } catch {
+      navigate("/", { replace: true });
+    }
   };
 
   return (
-    <div className="match-page">
-      {/* 상단바 */}
-      <header className="mp-topbar">
-        <Link to="/main" className="mp-icon-btn" aria-label="뒤로가기">←</Link>
-        <div className="mp-title">매칭 하기</div>
-        <nav className="mp-actions">
-          <button className="mp-icon-btn" aria-label="검색">🔍</button>
-          <Link to="/profile" className="mp-icon-btn" aria-label="프로필">👤</Link>
-          <button className="mp-icon-btn" aria-label="메뉴">☰</button>
+    <div className="match-wrap">
+      <header className="match-appbar">
+        <button
+          className="back-btn"
+          aria-label="뒤로가기"
+          onClick={() => {
+            navigate(-1);
+          }}
+        >
+          <svg viewBox="0 0 24 24" width="22" height="22">
+            <path
+              d="M15 6l-6 6 6 6"
+              stroke="currentColor"
+              strokeWidth="2"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+
+        <h1 className="topbar-title">매칭 하기</h1>
+
+        <nav className="top-icons">
+          <Link to="/chat" aria-label="메시지" className="mp-icon-btn">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <path
+                d="M20 2H4a2 2 0 0 0-2 2v14l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+            </svg>
+          </Link>
+
+          <Link to="/profile" className="mp-profile-chip" aria-label="프로필">
+            <span className="mp-avatar" aria-hidden>
+              👤
+            </span>
+          </Link>
+
+          {/* ▼ 메뉴 버튼 + 드롭다운 */}
+          <div className="mp-menu" ref={menuRef}>
+            <button
+              className="mp-icon-btn mp-menu-btn"
+              aria-label="메뉴"
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((v) => !v)}
+            >
+              <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+                <path d="M3 6h18M3 12h18M3 18h18" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </button>
+
+            {menuOpen && (
+              <ul className="mp-menu-dd" role="menu">
+                <li role="menuitem">
+                  <button className="mp-menu-item" onClick={handleLogout}>
+                    로그아웃
+                  </button>
+                </li>
+              </ul>
+            )}
+          </div>
         </nav>
       </header>
 
-      {/* 필터 바 */}
-      <section className="mp-filters">
-        <form className="mp-filter-form" onSubmit={onSearch}>
-          <div className="mp-filter-row">
-            <label className="mp-filter">
-              <span>성별</span>
-              <select
-                value={filters.gender}
-                onChange={(e)=>setFilters(f=>({...f, gender:e.target.value}))}
-              >
-                <option value="ALL">전체</option>
-                <option value="MALE">남성</option>
-                <option value="FEMALE">여성</option>
-              </select>
-            </label>
+      <main className="match-main">
+        <h2 className="headline">
+          <span className="nickname">{displayName}</span>
+          님과 <span className="similarity">유사도</span>가 비슷해요
+        </h2>
 
-            <label className="mp-filter">
-              <span>흡연</span>
-              <select
-                value={filters.smoking}
-                onChange={(e)=>setFilters(f=>({...f, smoking:e.target.value}))}
-              >
-                <option value="ALL">전체</option>
-                <option value="YES">흡연</option>
-                <option value="NO">비흡연</option>
-              </select>
-            </label>
+        {loading && <div className="card skeleton" />}
+        {error && <div className="error">{error}</div>}
 
-            <label className="mp-filter">
-              <span>최소 유사도</span>
-              <input
-                type="number"
-                min={0}
-                max={100}
-                value={filters.minScore}
-                onChange={(e)=>setFilters(f=>({...f, minScore: Number(e.target.value)}))}
-              />
-            </label>
-
-            <label className="mp-filter grow">
-              <span>검색</span>
-              <input
-                type="search"
-                placeholder="닉네임/메모"
-                value={filters.q}
-                onChange={(e)=>setFilters(f=>({...f, q:e.target.value}))}
-              />
-            </label>
-
-            <button className="mp-btn" type="submit">적용</button>
-          </div>
-        </form>
-      </section>
-
-      {/* 본문 */}
-      <main className="mp-body">
-        <h2 className="mp-lead"><b>Admin</b>님과 유사도가 비슷해요</h2>
-
-        {err && <div className="mp-error">{err}</div>}
-
-        {empty && (
-          <div className="mp-empty">
-            조건에 맞는 결과가 없습니다. 필터를 조정해 보세요.
+        {!loading && !error && items.length === 0 && (
+          <div className="empty">
+            아직 표시할 매칭 결과가 없어요.<br />
+            • userId가 올바른지 <code>localStorage / em_user</code> 확인<br />
+            • Network 탭에서 <code>/match/recommendation/list/{String(userId)}</code> 응답 확인
           </div>
         )}
 
-        <ul className="mp-list">
-          {items.map((c) => (
-            <li key={c.id} className="mp-card">
-              <div className="mp-avatar" aria-hidden>👤</div>
+        {!loading && !error && items.length > 0 && (
+          <ul className="card-list">
+            {items.map((it, idx) => {
+              const matchUserId = it.userId ?? it.matchUserId ?? it.id;
+              const name = it.username || it.roommateName || "익명";
+              const rawScore =
+                it.score ?? it.preferenceScore ?? it.similarity ?? it.similarityScore;
+              const similarity =
+                rawScore == null
+                  ? undefined
+                  : Math.round(Number(rawScore) * (Number(rawScore) > 1 ? 1 : 100));
 
-              <div className="mp-card-main">
-                <div className="mp-name-row">
-                  <div className="mp-name">{c.name ?? '익명'}</div>
-                  <div className="mp-score-badge">{scoreLabel(c.similarity ?? 0)}</div>
-                </div>
+              // 성별/흡연(보강된 값) 라벨링
+              const genderLabel = toGenderLabel(
+                it.gender ?? it.userGender ?? it.roommateGender ?? it.sex ?? it.genderCode
+              );
+              const smokingLabel = toSmokingLabel(
+                it.smoking ??
+                  it.isSmoker ??
+                  it.smoker ??
+                  it.smokingStatus ??
+                  it.smokeYn ??
+                  it.smoke ??
+                  it.smokingHabit
+              );
 
-                <div className="mp-meta">
-                  {(c.age ? `${c.age}살, ` : '')}
-                  {c.gender === 'MALE' ? '남성' : c.gender === 'FEMALE' ? '여성' : '성별 비공개'}
-                  {typeof c.smoking === 'boolean' ? ` · ${c.smoking ? '흡연' : '비흡연'}` : ''}
-                </div>
+              return (
+                <li className="card" key={`${matchUserId}-${idx}`}>
+                  <div className="card-left">
+                    <div className="name">{name}</div>
 
-                <div className="mp-sub">{(c.tags && c.tags.join(', ')) || '설문조사 기반 유사도'}</div>
+                    {/* ✅ 상대 정보: 성별 + 흡연 여부(흡연/비흡연) */}
+                    <div className="meta">
+                      <span className="op-gender">성별: {genderLabel}</span>
+                      <span className="sep"> · </span>
+                      <span className="op-smoking">흡연: {smokingLabel}</span>
+                    </div>
 
-                {/* 프로그레스바 형태의 유사도 시각화 */}
-                <div className="mp-progress">
-                  <span style={{ width: `${Math.max(0, Math.min(100, Math.round(c.similarity || 0)))}%` }} />
-                </div>
-              </div>
+                    <button
+                      className="result-link"
+                      onClick={async () => {
+                        try {
+                          const r = await getMatchResult(userId, matchUserId);
+                          const msg = `유사도: ${
+                            r?.similarity ?? r?.similarityScore ?? similarity ?? "-"
+                          }%\n상태: ${
+                            r?.status ?? r?.matchStatus ?? it?.status ?? "-"
+                          }`;
+                          alert(msg);
+                        } catch {
+                          alert("상세 매칭 결과를 불러오지 못했어요.");
+                        }
+                      }}
+                    >
+                      설문조사 결과
+                    </button>
+                  </div>
 
-              <div className="mp-card-actions">
-                {/* ✅ 여기만 변경 */}
-                <button className="mp-chat-btn" onClick={() => openChat(c)}>
-                  채팅하기
-                </button>
-              </div>
-            </li>
-          ))}
-
-          {/* 로딩 스켈레톤 */}
-          {loading && Array.from({ length: 3 }).map((_, i) => (
-            <li key={`sk-${i}`} className="mp-card sk">
-              <div className="sk-avatar" />
-              <div className="sk-lines">
-                <div className="sk-line w60" />
-                <div className="sk-line w40" />
-                <div className="sk-line w80" />
-              </div>
-              <div className="sk-btn" />
-            </li>
-          ))}
-        </ul>
-
-        {/* 더 보기 */}
-        {canLoadMore && (
-          <div className="mp-more">
-            <button className="mp-btn" onClick={() => fetchPage(page + 1, /*append=*/true)}>
-              더 보기
-            </button>
-          </div>
+                  <div className="card-right">
+                    <button className="chat-btn" onClick={() => startChatWith(matchUserId)}>
+                      채팅하기
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         )}
       </main>
     </div>

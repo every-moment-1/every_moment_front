@@ -1,45 +1,44 @@
+// src/api/axiosInstance.js
 import axios from 'axios';
 import { authStore } from '../store/auth';
 
 const api = axios.create({
-  // 개발: Vite 프록시(/api -> http://localhost:8080/api/school)와 함께 사용
-  // 운영: VITE_API_BASE에 백엔드 전체 URL을 넣어 사용
   baseURL: import.meta.env.VITE_API_BASE || '/api',
   withCredentials: false,
   timeout: 10000,
 });
 
-// 요청마다 액세스 토큰 자동 첨부
+// auth 경로 식별
+const isAuthPath = (url = '') => /\/auth\/(login|register|refresh)\b/.test(String(url));
+
+// 모든 요청에 accessToken 부착 (단, auth/* 는 제외)
 api.interceptors.request.use((config) => {
-  const at = authStore.getAccessToken && authStore.getAccessToken();
-  if (at) {
-    config.headers = config.headers || {};
-    config.headers.Authorization = `Bearer ${at}`;
+  const url = String(config?.url || '');
+  if (!isAuthPath(url)) {
+    const at = authStore.getAccessToken?.() || localStorage.getItem('accessToken');
+    if (at) {
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${at}`;
+    }
   }
   return config;
 });
 
 let isRefreshing = false;
 let subscribers = [];
-
-function subscribeTokenRefresh(cb) {
-  subscribers.push(cb);
-}
-function onRefreshed(token) {
-  subscribers.forEach((cb) => cb(token));
-  subscribers = [];
-}
+const subscribeTokenRefresh = (cb) => subscribers.push(cb);
+const onRefreshed = (token) => { subscribers.forEach((cb) => cb(token)); subscribers = []; };
 
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
+    if (!error?.response) return Promise.reject(error);
+
     const original = error.config || {};
-    const status = error?.response?.status;
+    const status = error.response.status;
+    const url = String(original?.url || '');
 
-    // 로그인/회원가입은 토큰 갱신 X
-    const isAuth = /\/auth\/(login|register)/.test(original?.url || '');
-
-    if (status === 401 && !isAuth && !original._retry) {
+    if (status === 401 && !isAuthPath(url) && !original._retry) {
       original._retry = true;
 
       if (isRefreshing) {
@@ -54,24 +53,46 @@ api.interceptors.response.use(
 
       isRefreshing = true;
       try {
-        const rt = authStore.getRefreshToken && authStore.getRefreshToken();
+        const rt = authStore.getRefreshToken?.() || localStorage.getItem('refreshToken');
         if (!rt) throw new Error('No refresh token');
 
-        const resp = await api.post('/auth/refresh', { refreshToken: rt });
-        // 백엔드 래퍼 대응: data.data 또는 data
+        let resp;
+        // ⚠️ 중요: 리라이트가 적용되는 그룹 → 'api/...' 로 호출해야 최종 /api/...로 도착함
+        // 최종 전송 경로: /api + 'api/school/auth/refresh' = /api/api/school/auth/refresh
+        // (프록시가 첫 /api 를 제거 → 백엔드 /api/school/auth/refresh 로 도달)
+        try {
+          resp = await api.post('school/auth/refresh', { refreshToken: rt });
+        } catch {
+          try {
+            resp = await api.post('school/auth/refresh', null, {
+              headers: {
+                Authorization: `Bearer ${rt}`,
+                'X-Refresh-Token': rt,
+              },
+            });
+          } catch {
+            resp = await api.post('school/auth/refresh', {}, { withCredentials: true });
+          }
+        }
+
         const payload = resp?.data?.data || resp?.data || {};
         const { accessToken, refreshToken: newRT } = payload;
-
         if (!accessToken) throw new Error('No accessToken from refresh');
 
-        authStore.setTokens({ accessToken, refreshToken: newRT || rt });
+        authStore.setTokens?.({ accessToken, refreshToken: newRT || rt });
+        try {
+          localStorage.setItem('accessToken', accessToken);
+          if (newRT || rt) localStorage.setItem('refreshToken', newRT || rt);
+        } catch {}
+
         onRefreshed(accessToken);
 
         original.headers = original.headers || {};
         original.headers.Authorization = `Bearer ${accessToken}`;
         return api(original);
       } catch (e) {
-        authStore.clear && authStore.clear();
+        authStore.clear?.();
+        try { localStorage.removeItem('accessToken'); localStorage.removeItem('refreshToken'); } catch {}
         throw e;
       } finally {
         isRefreshing = false;

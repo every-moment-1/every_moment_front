@@ -13,7 +13,8 @@ import BoardPage from "./pages/BoardPage"
 import BoardWritePage from "./pages/BoardWritePage"
 import BoardDetailPage from "./pages/BoardDetailPage";
 import BoardEditPage from "./pages/BoardEditPage";
-
+import AdminMatchResultsPage from "./pages/AdminMatchResultPage.jsx";
+import AdminOnly from "./routes/AdminOnly.jsx";
 
 export default function App() {
   return (
@@ -32,6 +33,16 @@ export default function App() {
         }
       />
       <Route
+        path="/admin/matches"
+        element={
+          <ProtectedRoute>
+            <AdminOnly>
+              <AdminMatchResultsPage />
+            </AdminOnly>
+          </ProtectedRoute>
+        }
+      />s
+      <Route
         path="/profile"
         element={
           <ProtectedRoute>
@@ -48,10 +59,10 @@ export default function App() {
         }
       />
       <Route
-        path="/surveyResult"
-        element = {
+        path="/survey/result"
+        element={
           <ProtectedRoute>
-            <SurveyResultpage/>
+            <SurveyResultpage />
           </ProtectedRoute>
         }
       />
@@ -70,8 +81,15 @@ export default function App() {
             <ChatPage />
           </ProtectedRoute>
         }
-      /> 
-
+      />
+      <Route
+        path="/chat/:roomId"
+        element={
+          <ProtectedRoute>
+            <ChatPage />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/boards/:cat"
         element={
@@ -105,7 +123,7 @@ export default function App() {
           </ProtectedRoute>
         }
       />
- 
+
 
     </Routes>
   );

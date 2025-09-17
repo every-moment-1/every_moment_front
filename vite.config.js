@@ -15,11 +15,30 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true,
       },
+       '/api/chat/rooms': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/api/survey': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+
+      '/api/survey/result': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+
+      '/api/match': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      
       // ✅ 나머지는 /api → /api/school 로 rewrite (예: /api/user → /api/school/user)
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
-        rewrite: (p) => p.replace(/^\/api/, '/api/school'),
+        rewrite: (p) => p.replace(/^\/api/, ''),
       },
     },
   },

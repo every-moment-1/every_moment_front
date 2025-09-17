@@ -48,6 +48,40 @@
     padding-right: 8px;
 }
 
+
+.mp-menu {
+    position: relative;
+    display: inline-block;
+}
+
+.mp-menu-dd {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    min-width: 120px;
+    padding: 6px 0;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .08);
+    z-index: 1000;
+}
+
+.mp-menu-item {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: 0;
+    padding: 10px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #111827;
+}
+
+.mp-menu-item:hover {
+    background: #f3f4f6;
+}
+
 .icon {
     width: 34px;
     height: 34px;
@@ -105,14 +139,18 @@
 }
 
 .btn {
-    min-width: 96px;
-    padding: 8px 14px;
-    border-radius: 8px;
-    border: 1px solid transparent;
-    font-weight: 700;
-    cursor: pointer;
-    background: #fff;
+  min-width: 112px;
+  padding: 9px 0;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 14px;
+  background: #fff;
+  transition: filter .15s ease, opacity .15s ease;
 }
+
+.btn:hover { filter: brightness(.98); }
 
 .btn.primary {
     background: var(--accent);
@@ -130,6 +168,14 @@
     background: #fff;
     color: var(--danger);
     border-color: var(--danger);
+}
+/* 위치 지정 */
+.btn-cancel {
+  justify-self: start;            /* 왼쪽 정렬 */
+}
+
+.btn-submit {
+  justify-self: center;           /* 가운데 정렬 */
 }
 
 .empty {

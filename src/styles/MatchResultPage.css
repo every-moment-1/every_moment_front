@@ -1,0 +1,304 @@
+:root {
+  --bg: #f0f2f5;
+  /* 스크린샷과 비슷한 연한 회색 배경 */
+  --card: #ffffff;
+  --text: #111827;
+  --muted: #6b7280;
+  --primary: #0ea5e9;
+  /* 스크린샷의 푸른 버튼 */
+  --line: #e6e8ec;
+  --radius: 14px;
+}
+
+* {
+  box-sizing: border-box
+}
+
+html,
+body,
+#root {
+  height: 100%
+}
+
+body {
+  margin: 0;
+}
+
+/* 상단 앱바 */
+.match-wrap {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Noto Sans KR", Segoe UI, Roboto, Arial, sans-serif;
+}
+
+.match-appbar {
+  height: 64px;
+  color: #fff;
+  display: grid;
+  background-color: white;
+  grid-template-columns: 56px 1fr auto;
+  align-items: center;
+  padding: 0 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.match-appbar .appbar-right {
+  display: flex;
+  gap: 10px
+}
+
+.back-btn {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  color: #fff;
+  cursor: pointer;
+}
+
+
+.mp-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.mp-menu-dd {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  min-width: 120px;
+  padding: 6px 0;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .08);
+  z-index: 1000;
+}
+
+.mp-menu-item {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  padding: 10px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #111827;
+}
+
+.mp-menu-item:hover {
+  background: #f3f4f6;
+}
+
+/* 본문 */
+.match-wrap {
+  min-height: 100vh;
+}
+
+.match-main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 18px
+}
+
+.headline {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 10px 6px 16px
+}
+
+.headline .nickname {
+  margin-right: 4px
+}
+
+.headline .similarity {
+  color: #1677ff;
+  text-decoration: none;
+  font-weight: 900
+}
+
+/* 카드 리스트 */
+.card-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px
+}
+
+.card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .04)
+}
+
+.card-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px
+}
+
+.card .name {
+  font-weight: 900
+}
+
+.card .meta {
+  font-size: 13px;
+  color: var(--muted)
+}
+
+.result-link {
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--muted);
+  text-decoration: none;
+  cursor: pointer;
+  text-align: left
+}
+
+.result-link:hover {
+  text-decoration: underline
+}
+
+.card-right {
+  display: flex;
+  align-items: center;
+  gap: 12px
+}
+
+.chat-btn {
+  border: none;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 800;
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, .03)
+}
+
+.chat-btn:hover {
+  filter: brightness(.96)
+}
+
+/* skeleton */
+.skeleton {
+  height: 84px;
+  border-radius: 16px;
+  background: linear-gradient(90deg, #eee, #f6f7f8, #eee);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0
+  }
+
+  100% {
+    background-position: -200% 0
+  }
+}
+
+/* 오류 */
+.error {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 12px 14px;
+  border-radius: 10px
+}
+
+/* 스크롤바(우측 얇은 회색 느낌) */
+.match-main {
+  scrollbar-width: thin;
+  scrollbar-color: #cfd3da transparent
+}
+
+.match-main::-webkit-scrollbar {
+  width: 8px
+}
+
+.match-main::-webkit-scrollbar-thumb {
+  background: #cfd3da;
+  border-radius: 999px
+}
+
+/* 우측 액션(운영자 문의 등)을 '시간' 텍스트처럼 보이게 */
+.bd-actions .act {
+  appearance: none;          /* 브라우저 기본 버튼 외형 제거 */
+  background: transparent;   /* 배경 제거 */
+  border: 0;                 /* 테두리 제거 */
+  padding: 0 6px;            /* 텍스트 여백만 */
+  margin: 0;                 /* 불필요 마진 제거 */
+  font-size: 13px;           /* 시간 텍스트와 동일 톤 */
+  line-height: 1;
+  color: var(--muted);
+  display: inline;           /* 버튼 높이/라인 높이 맞춤 */
+  vertical-align: baseline;  /* 시간 텍스트와 baseline 정렬 */
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.bd-actions .act:hover {
+  color: var(--text);
+  text-decoration: underline; /* 호버 시만 링크 느낌 */
+}
+
+/* 여러 액션이 붙을 때 얇은 구분선(선택) */
+.bd-actions .act + .act {
+  position: relative;
+  margin-left: 10px;
+  padding-left: 10px;
+}
+.bd-actions .act + .act::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 1px; height: 12px;
+  background: #e5e7eb;
+}
+
+/* 댓글 우측 액션(채팅 등)도 '시간' 텍스트처럼 보이게 */
+.cmt-actions .act {
+  appearance: none;          /* 기본 버튼 외형 제거 */
+  background: transparent;   /* 배경 제거 */
+  border: 0;                 /* 테두리 제거 */
+  padding: 0 6px;            /* 텍스트 간격만 */
+  margin: 0 !important;      /* 인라인 margin-left 제거 필요 시 */
+  font-size: 13px;           /* 시간과 같은 크기 */
+  line-height: 1;
+  color: var(--muted);
+  display: inline;           /* 텍스트 라인에 맞추기 */
+  vertical-align: baseline;  /* 시간과 베이스라인 정렬 */
+  cursor: pointer;
+  text-decoration: none;
+}
+.cmt-actions .act:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+
+/* 댓글 액션이 여러 개일 때만 얇은 구분선(선택) */
+.cmt-actions .act + .act {
+  position: relative;
+  margin-left: 10px !important;
+  padding-left: 10px;
+}
+.cmt-actions .act + .act::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 1px; height: 12px;
+  background: #e5e7eb;
+}

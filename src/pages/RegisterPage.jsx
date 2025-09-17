@@ -50,7 +50,7 @@ export default function RegisterPage() {
       // 1) 회원가입 시도
       let canProceedToLogin = true;
       try {
-        await api.post('/auth/register', {
+        await api.post('/api/school/auth/register', {
           username: toUsername(form.email),
           gender: toGenderInt(form.gender),
           email: form.email,
@@ -84,7 +84,7 @@ export default function RegisterPage() {
 
       // 2) 자동 로그인 시도 (회원가입 200이든, 위 500-버그든 모두 여기서 확인)
       try {
-        const loginRes = await api.post('/auth/login', {
+        const loginRes = await api.post('/api/school/auth/login', {
           email: form.email,
           password: form.password,
         });

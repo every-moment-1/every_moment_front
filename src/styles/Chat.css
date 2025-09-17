@@ -1,303 +1,340 @@
-/* 네임스페이스: ch- (충돌 방지) */
+/*
+* src/styles/Chat.css
+* Chat UI CSS
+* 네임스페이스: ch- (충돌 방지)
+*/
+
+/* ========================================= */
+/* --- 1. Global & Layout Settings --- */
+/* ========================================= */
+
 .ch-wrap {
-    --bg: #f6f7f9;
-    --card: #fff;
-    --line: #e5e7eb;
-    --ink: #111;
-    --muted: #6b7280;
-    --accent: #2d8cff;
-    min-height: 100vh;
-    background: var(--bg);
-    color: var(--ink);
-    display: flex;
-    flex-direction: column;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", Arial, sans-serif;
+  --bg: #f6f7f9;
+  --card: #fff;
+  --line: #e5e7eb;
+  --ink: #111;
+  --muted: #6b7280;
+  --accent: #2d8cff;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
 }
 
-.ch-wrap * {
-    box-sizing: border-box;
+.ch-wrap * { box-sizing: border-box; }
+
+.ch-body {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 12px;
+  padding: 12px;
+  flex: 1;
 }
 
-/* 상단바 */
+/* ========================================= */
+/* --- 2. Top Bar (optional legacy) --- */
+/* ========================================= */
+
 .ch-topbar {
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    display: grid;
-    grid-template-columns: 48px 1fr auto;
-    align-items: center;
-    gap: 8px;
-    background: #fff;
-    padding: 12px 14px;
-    border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
 }
 
-.ch-top-title {
-    text-align: center;
-    font-weight: 800;
-}
+.ch-top-title { text-align: center; font-weight: 800; }
 
 .ch-icon {
-    all: unset;
-    display: grid;
-    place-items: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    color: #111;
-    cursor: pointer;
-    text-decoration: none;
+  all: unset;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  color: #111;
+  cursor: pointer;
+  text-decoration: none;
+}
+.ch-icon.ghost:hover { background: #f1f3f5; }
+
+.ch-top-actions { display: inline-flex; gap: 8px; }
+
+/* ===== FIX: 헤더 타이틀(채팅) 안 보이는 이슈 방지 ===== */
+.ch-wrap .profile-topbar .topbar-title{
+  color: var(--ink) !important; /* 강제 가독성 */
 }
 
-.ch-icon.ghost:hover {
-    background: #f1f3f5;
-}
+/* ========================================= */
+/* --- 3. Left Sidebar (Room List) --- */
+/* ========================================= */
 
-.ch-top-actions {
-    display: inline-flex;
-    gap: 8px;
-}
-
-/* 본문 레이아웃 */
-.ch-body {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: 12px;
-    padding: 12px;
-    align-items: stretch;
-}
-
-/* ===== 좌측 목록 ===== */
 .ch-sidebar {
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    overflow: hidden;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.ch-list-header {
+  padding: 10px 14px;
+  font-weight: 700;
+  border-bottom: 1px solid var(--line);
 }
 
 .ch-room-list {
-    list-style: none;
-    margin: 0;
-    padding: 8px;
-    display: grid;
-    gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  display: grid;
+  gap: 8px;
+  overflow-y: auto;
 }
 
 .ch-room {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 10px;
-    cursor: pointer;
-    background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+  background: #fff;
 }
+.ch-room:hover { background: #fafafa; }
+.ch-room.active { outline: 2px solid rgba(45, 140, 255, .2); }
 
-.ch-room:hover {
-    background: #fafafa;
-}
-
-.ch-room.active {
-    outline: 2px solid rgba(45, 140, 255, .2);
-}
-
-.ch-room-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-width: 0;
-}
-
+.ch-room-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .ch-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 999px;
-    background: #f3f4f6;
-    display: grid;
-    place-items: center;
-    font-size: 16px;
+  width: 36px; height: 36px; border-radius: 999px;
+  background: #f3f4f6; display: grid; place-items: center; font-size: 16px;
 }
-
-.ch-room-main {
-    min-width: 0;
-}
-
-.ch-room-name {
-    font-weight: 700;
-    font-size: 14px;
-}
-
+.ch-room-main { min-width: 0; }
+.ch-room-name { font-weight: 700; font-size: 14px; }
 .ch-room-last {
-    color: var(--muted);
-    font-size: 13px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 160px;
+  color: var(--muted); font-size: 13px; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; max-width: 160px;
 }
+.ch-room-time { color: var(--muted); font-size: 12px; }
 
-.ch-room-time {
-    color: var(--muted);
-    font-size: 12px;
-}
+/* ========================================= */
+/* --- 4. Right Panel (Chat Window) --- */
+/* ========================================= */
 
-/* ===== 우측 패널 ===== */
 .ch-panel {
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    min-height: 520px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  min-height: 60vh;
 }
 
 .ch-panel-head {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-bottom: 1px solid var(--line);
 }
 
 .ch-back {
-    all: unset;
-    font-size: 18px;
-    width: 32px;
-    height: 32px;
-    display: grid;
-    place-items: center;
-    border-radius: 8px;
-    cursor: pointer;
+  all: unset; font-size: 18px; width: 32px; height: 32px;
+  display: grid; place-items: center; border-radius: 8px; cursor: pointer;
 }
+.ch-back:hover { background: #f3f4f6; }
 
-.ch-back:hover {
-    background: #f3f4f6;
-}
-
-.ch-peer {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
+.ch-peer { display: flex; align-items: center; gap: 10px; }
 .ch-peer-avatar {
-    all: unset;
-    width: 32px;
-    height: 32px;
-    border-radius: 999px;
-    background: #f3f4f6;
-    display: grid;
-    place-items: center;
-    cursor: pointer;
+  all: unset; width: 32px; height: 32px; border-radius: 999px;
+  background: #f3f4f6; display: grid; place-items: center; cursor: pointer;
 }
+.ch-peer-name { font-weight: 800; }
 
-.ch-peer-name {
-    font-weight: 800;
-}
+/* ========================================= */
+/* --- 5. Message Area --- */
+/* ========================================= */
 
-/* 메시지 영역 */
 .ch-msgs {
-    flex: 1;
-    overflow: auto;
-    padding: 12px;
-    display: grid;
-    gap: 8px;
-    background: #fff;
+  flex: 1; overflow-y: auto; padding: 12px;
+  display: flex; flex-direction: column; gap: 8px; background: #fff;
 }
 
-.msg-row {
-    display: grid;
-    gap: 4px;
-    align-content: start;
-}
+.msg-row { display: flex; max-width: 80%; align-items: flex-end; gap: 8px; }
 
-.msg-row.peer {
-    justify-items: start;
-    grid-template-columns: auto;
-}
+/* 내가 보낸 메시지 */
+.msg-row.sent { align-self: flex-end; flex-direction: row-reverse; }
 
-.msg-row.my {
-    justify-items: end;
-    grid-template-columns: auto;
-}
+/* 상대가 보낸 메시지 */
+.msg-row.received { align-self: flex-start; }
 
 .bubble {
-    max-width: min(72ch, 80%);
-    padding: 10px 12px;
-    border-radius: 16px;
-    background: #f3f4f6;
-    color: #111;
-    line-height: 1.4;
-    word-break: break-word;
+  max-width: min(72ch, 80%);
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: #f3f4f6;
+  color: #111;
+  line-height: 1.4;
+  word-break: break-word;
+}
+.msg-row.sent .bubble { background: var(--accent); color: #fff; }
+.msg-row.received .bubble { background: #e9e9eb; color: black; }
+
+.time { font-size: 12px; color: var(--muted); }
+
+/* --- 관리자 라벨(보낸 사람 표시) --- */
+.bubble .from{
+  display:block;
+  margin-bottom:6px;
+  font-size:12px;
+  font-weight:700;
+  opacity:.85;
+  color:inherit; /* 말풍선 색상을 그대로 따름 */
 }
 
-.msg-row.my .bubble {
-    background: var(--accent);
-    color: #fff;
+/* ===== 5.5 System / Match Request ===== */
+
+.msg-row.system { align-self: center; justify-content: center; }
+.bubble.system {
+  background: #eef2ff;
+  color: #3730a3;
+  border: 1px solid #c7d2fe;
 }
 
-.time {
-    font-size: 12px;
-    color: var(--muted);
-}
+/* 요청 카드 */
+.match-request { display:flex; flex-direction:column; gap:8px; }
+.match-request .mr-text { font-weight:600; }
+.match-request .mr-actions { display:flex; gap:8px; }
 
-/* 입력 바 */
+.mr-accept, .mr-decline {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 0;
+  cursor: pointer;
+}
+.mr-accept { background:#10b981; color:#fff; }
+.mr-decline { background:#ef4444; color:#fff; }
+.mr-accept:disabled, .mr-decline:disabled { opacity: .6; cursor: not-allowed; }
+
+/* ========================================= */
+/* --- 6. Input Bar --- */
+/* ========================================= */
+
 .ch-inputbar {
-    display: grid;
-    grid-template-columns: 1fr 42px;
-    gap: 8px;
-    padding: 10px;
-    border-top: 1px solid var(--line);
-    background: #fff;
+  display: grid;
+  grid-template-columns: 1fr 42px auto;
+  gap: 8px;
+  padding: 10px;
+  border-top: 1px solid var(--line);
+  background: #fff;
 }
 
 .ch-input {
-    height: 40px;
-    border-radius: 999px;
-    border: 1px solid var(--line);
-    padding: 0 14px;
-    outline: none;
-    font-size: 14px;
-    background: #fff;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  padding: 0 14px;
+  outline: none;
+  font-size: 14px;
+  background: #fff;
 }
-
 .ch-input:focus {
-    border-color: #b9c1cb;
-    box-shadow: 0 0 0 3px rgba(45, 140, 255, .12);
+  border-color: #b9c1cb;
+  box-shadow: 0 0 0 3px rgba(45, 140, 255, .12);
 }
 
 .ch-send {
-    all: unset;
-    width: 42px;
-    height: 42px;
-    border-radius: 999px;
-    background: #f3f4f6;
-    display: grid;
-    place-items: center;
-    cursor: pointer;
+  all: unset;
+  width: 42px; height: 42px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  display: grid; place-items: center;
+  cursor: pointer;
+}
+.ch-send:hover { filter: brightness(.97); }
+
+/* 입력바 우측 액션들을 한 줄로 묶어서, 서로 '바로 옆'에 배치 */
+.ch-actions-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-self: end; /* 그리드 3번째 칸의 오른쪽 정렬 */
+}
+.ch-actions-right .ch-match-btn {
+  white-space: nowrap; /* 버튼 텍스트 줄바꿈 방지 */
 }
 
-.ch-send:hover {
-    filter: brightness(.97);
+/* 룸메이트 요청/스왑/관리자 버튼 공통 */
+.ch-match-btn {
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
 }
+.ch-match-btn:hover { background: #f9fafb; }
+.ch-match-btn:disabled { opacity: .6; cursor: not-allowed; }
 
-/* 비어있을 때 */
+/* 관리자 보기전용(전송/입력 막힌 상태일 때 살짝 흐리게 표시) */
+.ch-inputbar.readonly { opacity: .85; }
+.ch-inputbar.readonly .ch-input::placeholder { color: #9ca3af; }
+.ch-inputbar.readonly .ch-input,
+.ch-inputbar.readonly .ch-send,
+.ch-inputbar.readonly .ch-match-btn { cursor: not-allowed; }
+
+/* ========================================= */
+/* --- 7. Empty State & Responsiveness --- */
+/* ========================================= */
+
 .ch-empty {
-    flex: 1;
-    display: grid;
-    place-items: center;
-    color: var(--muted);
+  flex: 1; display: grid; place-items: center; color: var(--muted);
 }
 
-/* 반응형 */
 @media (max-width: 860px) {
-    .ch-body {
-        grid-template-columns: 1fr;
-    }
+  .ch-body { grid-template-columns: 1fr; }
+  .ch-panel { min-height: 60vh; }
+}
 
-    .ch-panel {
-        min-height: 60vh;
-    }
+/* ========================================= */
+/* --- 8. Tabs (관리자 전용 뷰 스위치) --- */
+/* ========================================= */
+
+.tab{
+  border:1px solid var(--line);
+  border-radius:9px;
+  padding:6px 12px;
+  background:#fff;
+  cursor:pointer;
+  color:#111;
+}
+
+/* 균등 폭 & 동일 높이(아님) → 왼쪽에 작게 배치 */
+.ch-wrap .tab{
+  display: inline-flex;          
+  align-items: center;
+  justify-content: center;
+  height: 32px;                 
+  padding: 0 12px;              
+  flex: 0 0 auto;                
+}
+
+.tab.active{
+  background:var(--accent);
+  color:#ffffff;
+  border-color:var(--accent);
+}
+.tab.active * { color:#ffffff !important; }
+
+@media (max-width: 420px){
+  .ch-wrap .tab{ min-width: 0; }
 }

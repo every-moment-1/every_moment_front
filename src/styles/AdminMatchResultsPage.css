@@ -1,0 +1,286 @@
+/* AdminMatchResultsPage 전용 스타일 (헤더 + 검색바 + 테이블 + 페이저) */
+/* 모든 규칙은 .adminmatch 스코프로 제한되어 다른 페이지에 영향 X */
+
+.adminmatch {
+  --bg: #f4f5f6;
+  --card: #fff;
+  --line: #e8e8e8;
+  --text: #111;
+  --muted: #7c7c7c;
+  --accent: #1990ff;
+  color: var(--text);
+  background: var(--bg);
+  min-height: 100vh;
+  font-family: system-ui, -apple-system, "Noto Sans KR", Segoe UI, Roboto, Arial, sans-serif;
+}
+
+/* ===== 헤더 (프로필 헤더 복제) ===== */
+.adminmatch .profile-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10000;
+  height: 56px;
+  background: #fff;
+  display: grid;
+  grid-template-columns: 56px 1fr auto; /* 뒤로가기 | 제목 | 아이콘 */
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  /* 제목 절대 중앙 배치용 기준 */
+  position: sticky;
+}
+
+/* 뒤로가기 버튼 */
+.adminmatch .profile-topbar .back-btn {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: var(--text);
+}
+.adminmatch .profile-topbar .back-btn:hover { background: #f8f8f8; }
+
+/* 제목 = 화면 정중앙(아이콘 폭과 무관) */
+.adminmatch .profile-topbar .topbar-title {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0 !important;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center !important;
+  color: var(--text);
+  pointer-events: none; /* 클릭 포커스가 뒤 요소로 전달되도록 */
+}
+
+/* 우측 아이콘 영역 */
+.adminmatch .profile-topbar .top-icons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 8px;
+  position: relative; /* ▼ 드롭다운 기준 */
+}
+
+/* 원형 아이콘 버튼 */
+.adminmatch .profile-topbar .profile-icon-btn {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--text);
+  text-decoration: none;
+}
+.adminmatch .profile-topbar .profile-icon-btn:hover { background: #f6f6f6; }
+.adminmatch .profile-topbar .profile-icon-btn:active { transform: translateY(1px); }
+
+/* ▼ 메뉴 드롭다운 */
+.adminmatch .menu-dd {
+  position: absolute;
+  right: 8px;
+  top: calc(100% + 8px);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  min-width: 120px;
+  padding: 6px 0;
+  box-shadow: 0 6px 18px rgba(0,0,0,.08);
+  list-style: none;
+  margin: 0;
+  z-index: 1000;
+}
+.adminmatch .menu-item {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 14px;
+}
+.adminmatch .menu-item:hover { background: #f6f6f6; }
+
+/* ===== 페이지 섹션 ===== */
+/* ▼ 폭 늘리고 중앙 정렬 */
+.adminmatch .lp-admin-list {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px clamp(12px, 2vw, 20px);
+}
+
+/* 상단 리스트 헤드 */
+.adminmatch .lp-list-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.adminmatch .lp-list-head h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+/* 검색/정렬 영역 */
+.adminmatch .lp-head-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.adminmatch .lp-input,
+.adminmatch .lp-select {
+  height: 36px;
+  min-width: 240px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--text);
+  outline: none;
+}
+.adminmatch .lp-input::placeholder { color: var(--muted); }
+.adminmatch .lp-input:focus,
+.adminmatch .lp-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(25,144,255,0.15);
+}
+
+/* ===== 테이블 ===== */
+/* ▼ 가로 스크롤바 제거 */
+.adminmatch .lp-table-wrap {
+  overflow-x: hidden; /* auto → hidden */
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+/* ▼ 넓어진 영역에 맞춰 고정 레이아웃(줄바꿈/말줄임) */
+.adminmatch .lp-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* 셀 폭을 고정해 수평 스크롤 방지 */
+}
+
+.adminmatch .lp-table thead th {
+  position: sticky;
+  top: 0;
+  background: #fafafa;
+  font-weight: 700;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  padding: 12px;
+  white-space: nowrap;
+}
+
+.adminmatch .lp-table tbody td {
+  border-bottom: 1px solid var(--line);
+  padding: 10px 12px;
+  vertical-align: middle;
+  word-break: break-word;
+}
+
+.adminmatch .lp-table tbody tr:hover { background: #fcfcfc; }
+
+.adminmatch .lp-empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 20px 8px;
+}
+
+/* 열 폭 (table-layout: fixed와 함께 동작) */
+.adminmatch .col-state   { width: 120px; }
+.adminmatch .col-match   { width: 320px; }
+.adminmatch .col-room    { width: 220px; }
+.adminmatch .col-score   { width: 100px; }
+.adminmatch .col-reasons { width: auto; }
+
+/* 보조 UI */
+.adminmatch .lp-score { text-align: right; font-weight: 700; }
+.adminmatch .lp-sep   { color: #9ca3af; margin: 0 6px; }
+
+/* 이유 셀은 한 줄 말줄임(수평 스크롤 없이 내용 정리) */
+.adminmatch .lp-reasons {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 상태 배지 */
+.adminmatch .lp-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+.adminmatch .lp-badge-accept  { background: #16a34a; }  /* green */
+.adminmatch .lp-badge-pending { background: #f59e0b; }  /* amber */
+.adminmatch .lp-badge-reject  { background: #ef4444; }  /* red */
+
+/* ===== 페이저 ===== */
+/* ▼ 배경색 제거(투명 버튼) */
+.adminmatch .lp-pager {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 0;
+}
+.adminmatch .lp-btn {
+  height: 36px;
+  padding: 0 14px;
+  border: none;            /* 테두리/배경 제거 */
+  background: transparent; /* ← 배경색 제거 */
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 8px;
+}
+.adminmatch .lp-btn:hover { color: var(--text); background: transparent; }
+.adminmatch .lp-btn:disabled { opacity: .5; cursor: default; }
+.adminmatch .lp-page { font-size: 14px; color: var(--muted); }
+
+/* ===== 반응형 ===== */
+@media (max-width: 640px) {
+  .adminmatch .lp-list-head {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .adminmatch .lp-head-actions {
+    justify-content: space-between;
+  }
+  .adminmatch .lp-input,
+  .adminmatch .lp-select { min-width: 0; flex: 1; }
+}
+
+/* === PATCH: 헤더 아이콘을 오른쪽으로 정렬, 제목은 중앙 유지 === */
+.adminmatch .profile-topbar {
+  grid-template-columns: 56px 1fr auto; /* ← 왼쪽 back | 중앙영역 | 오른쪽 아이콘 */
+}
+.adminmatch .profile-topbar .top-icons {
+  justify-self: end;   /* ← 아이콘을 오른쪽 끝으로 */
+  padding-right: 8px;
+}
+
+/* (참고) 제목은 이미 absolute로 중앙 고정됨 */
+.adminmatch .profile-topbar .topbar-title {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+
+/* ====== PATCH: 점수 왼쪽 정렬 ====== */
+.adminmatch .lp-score { 
+  text-align: left;     /* ← 기존 right 덮어쓰기 */
+  font-weight: 700;
+}
+/* 혹시 컬럼에 고정 우측 정렬이 남아있을 대비 */
+.adminmatch .col-score { text-align: left; }

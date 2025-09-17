@@ -1,21 +1,26 @@
 // src/pages/BoardPage.jsx
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useRef, useMemo, useState } from "react";
 import { NavLink, Link, useNavigate, useParams } from "react-router-dom";
 import "../styles/BoardPage.css";
 import { fetchPostsSimple, catToEnum } from "../api/posts";
+import { authStore } from "../store/auth";   // ✅ 사용자 인증 정보 가져오기
+
 
 const CATS = [
-  { slug: "free",          label: "자유 게시판",                enum: "FREE"   },
-  { slug: "notice",        label: "공지 게시판",                enum: "NOTICE" },
-  { slug: "matching",      label: "매칭 게시판",                enum: "MATCH"  },
-  { slug: "find-roommate", label: "매칭 없이 룸메 찾기 게시판",  enum: "FIND"   },
+  { slug: "free", label: "자유 게시판", enum: "FREE" },
+  { slug: "notice", label: "공지 게시판", enum: "NOTICE" },
+  { slug: "matching", label: "매칭 게시판", enum: "MATCH" },
+  { slug: "find-roommate", label: "매칭 없이 룸메 찾기 게시판", enum: "FIND" },
 ];
 
 export default function BoardPage() {
   const { cat } = useParams();
   const navigate = useNavigate();
 
-  const [name] = useState("Admin");
+  const user = authStore.getUser();          // ✅ 현재 로그인한 사용자
+  const isAdmin = user?.role === "ROLE_ADMIN";
+
+  const [name] = useState(user?.username || "익명");
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const pageSize = 10;
@@ -25,7 +30,27 @@ export default function BoardPage() {
   const [error, setError] = useState("");
 
   const current = useMemo(() => CATS.find((c) => c.slug === cat), [cat]);
-  const showWrite = useMemo(() => current && current.enum !== "NOTICE", [current]);
+
+  // ▼ 메뉴 드롭다운 상태 & 외부 클릭 닫기
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (!menuRef.current) return;
+      if (!menuRef.current.contains(e.target)) setMenuOpen(false);
+    };
+    document.addEventListener("click", onDocClick);
+    return () => document.removeEventListener("click", onDocClick);
+  }, []);
+
+  // ✅ 작성 버튼 노출 조건
+  const showWrite = useMemo(() => {
+    if (!current) return false;
+    if (current.enum === "NOTICE") {
+      return isAdmin; // 공지는 관리자만 작성 가능
+    }
+    return true; // 나머지 카테고리는 누구나 가능
+  }, [current, isAdmin]);
 
   // 잘못된 카테고리면 기본 탭으로 이동
   useEffect(() => {
@@ -45,7 +70,7 @@ export default function BoardPage() {
       try {
         setLoading(true);
         setError("");
-        setQuery(""); // 탭 전환 시 검색 초기화(원하면 제거)
+        setQuery(""); // 탭 전환 시 검색 초기화
         const list = await fetchPostsSimple({
           category: catToEnum(current.slug),
           signal: ac.signal,
@@ -53,7 +78,7 @@ export default function BoardPage() {
         if (ac.signal.aborted) return;
         setRows(Array.isArray(list) ? list : []);
         setPage(1);
-        setError(""); // 성공 시 에러 초기화
+        setError("");
       } catch (e) {
         if (ac.signal.aborted || e?.code === "ERR_CANCELED" || e?.name === "CanceledError") return;
         setError(e?.response?.data?.message || e.message || "목록을 불러오지 못했습니다.");
@@ -85,7 +110,7 @@ export default function BoardPage() {
 
   // 번호 계산
   const startIndex = (page - 1) * pageSize;
-  const top = sorted.length - startIndex; // 이 페이지의 첫 글 번호(가장 큼)
+  const top = sorted.length - startIndex; // 이 페이지의 첫 글 번호
 
   const prev = () => setPage((p) => Math.max(1, p - 1));
   const next = () => setPage((p) => Math.min(totalPages, p + 1));
@@ -101,6 +126,46 @@ export default function BoardPage() {
       });
     }
     return v ?? "";
+  };
+
+  // ▼ 로그아웃 핸들러
+  const handleLogout = async () => {
+    try {
+      const tokens = JSON.parse(localStorage.getItem("em_tokens") || "{}");
+      const accessToken = tokens?.accessToken;
+      const refreshToken = tokens?.refreshToken;
+
+      const base = import.meta.env.VITE_API_BASE ?? "/api";
+      if (refreshToken) {
+        await api
+          .post(
+            `${base}/logout`,
+            { refreshToken },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+              },
+            }
+          )
+          .catch(() => { }); // 서버 실패해도 아래 클린업 진행
+      }
+
+      localStorage.removeItem("em_tokens");
+      localStorage.removeItem("em_user");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("userid");
+      localStorage.removeItem("memberId");
+
+      try {
+        const { authStore } = await import("../store/auth");
+        authStore?.logout?.();
+      } catch { }
+
+      navigate("/", { replace: true });
+    } catch {
+      navigate("/", { replace: true });
+    }
   };
 
   return (
@@ -129,19 +194,49 @@ export default function BoardPage() {
         <h1 className="topbar-title">게시판</h1>
 
         <nav className="top-icons">
-          <Link to="/chat" className="icon-btn" aria-label="메시지">
+
+          <Link to="/chat" aria-label="메시지" className="mp-icon-btn">
             <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-              <path d="M20 2H4a2 2 0 0 0-2 2v14l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z" />
+              <path
+                d="M20 2H4a2 2 0 0 0-2 2v14l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
             </svg>
           </Link>
-          <Link to="/profile" className="profile-chip">
-            <span className="showname">{name}</span>
+
+          <Link to="/profile" className="mp-profile-chip" aria-label="프로필">
+            <span className="mp-avatar" aria-hidden>
+              👤
+            </span>
           </Link>
-          <button className="icon-btn" aria-label="메뉴">
-            <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-              <path d="M3 6h18M3 12h18M3 18h18" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </button>
+
+          {/* ▼ 메뉴 버튼 + 드롭다운 */}
+          <div className="mp-menu" ref={menuRef}>
+            <button
+              className="mp-icon-btn mp-menu-btn"
+              aria-label="메뉴"
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((v) => !v)}
+            >
+              <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+                <path d="M3 6h18M3 12h18M3 18h18" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </button>
+
+            {menuOpen && (
+              <ul className="mp-menu-dd" role="menu">
+                <li role="menuitem">
+                  <button className="mp-menu-item" onClick={handleLogout}>
+                    로그아웃
+                  </button>
+                </li>
+              </ul>
+            )}
+          </div>
+
         </nav>
       </header>
 
@@ -197,9 +292,7 @@ export default function BoardPage() {
         ) : (
           pageData.map((row, idx) => (
             <div key={row.id} className="row">
-              {/* 전통 번호: 최신이 가장 큰 번호 */}
               <div className="no">{top - idx}</div>
-
               <div className="title">
                 <Link to={`/boards/${current.slug}/${row.id}`}>{row.title}</Link>
               </div>
